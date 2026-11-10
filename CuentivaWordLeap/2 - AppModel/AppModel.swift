@@ -16,11 +16,10 @@ final class AppModel {
     }
 
     /// Signals shared model work synchronously while leaving the interface unblocked.
-    @discardableResult
-    func applicationDidFinishLaunching() -> Task<Void, Never>? {
-        guard !hasLaunched else { return nil }
+    func applicationDidFinishLaunching() {
+        guard !hasLaunched else { return }
         hasLaunched = true
-        return libraryFeature.load()
+        libraryFeature.load()
     }
 
     static func live() -> AppModel {

@@ -12,9 +12,9 @@ struct AppModelTests {
             settingsFeature: SettingsFeature()
         )
 
-        let firstLaunch = try #require(appModel.applicationDidFinishLaunching())
-        #expect(appModel.applicationDidFinishLaunching() == nil)
-        await firstLaunch.value
+        appModel.applicationDidFinishLaunching()
+        appModel.applicationDidFinishLaunching()
+        await fixture.library.load().value
 
         #expect(fixture.library.isReady)
         #expect(fixture.library.books.count == 3)
