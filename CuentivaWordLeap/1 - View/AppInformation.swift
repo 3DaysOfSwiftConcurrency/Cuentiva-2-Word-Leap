@@ -1,6 +1,7 @@
 import Foundation
 
-struct AppInformation: Equatable {
+/// Immutable app identity prepared from the bundle for presentation.
+struct AppInformation: Equatable, Sendable {
     let version: String
     let build: String
 
