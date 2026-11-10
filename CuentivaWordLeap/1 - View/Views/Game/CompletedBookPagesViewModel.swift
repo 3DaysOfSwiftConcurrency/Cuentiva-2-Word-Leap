@@ -9,13 +9,11 @@ final class CompletedBookPagesViewModel {
     init(book: StoryBook) {
         cover = CompletedBookCoverPresentation(book: book)
         englishTitle = book.englishTitle
-        pages = book.spanishPassages.enumerated().map { index, spanish in
-            let translation = book.englishPassages.indices.contains(index)
-                ? book.englishPassages[index] : ""
+        pages = book.bilingualPassages.enumerated().map { index, passage in
             return CompletedBookPage(
                 index: index,
-                spanish: spanish,
-                english: translation.isEmpty ? nil : translation
+                spanish: passage.spanish,
+                english: passage.english
             )
         }
     }

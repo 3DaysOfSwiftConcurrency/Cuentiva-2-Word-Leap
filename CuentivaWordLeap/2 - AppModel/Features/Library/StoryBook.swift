@@ -28,6 +28,17 @@ struct StoryBook: Identifiable, Hashable, Sendable {
     }
 
     var platformCount: Int { spanishPassages.flatMap(SpanishWordTokenizer.platformTokens).count }
+    var bilingualPassages: [StoryBookPassage] {
+        spanishPassages.enumerated().map { passageIndex, spanish in
+            let translation = englishPassages.indices.contains(passageIndex)
+                ? englishPassages[passageIndex]
+                : ""
+            return StoryBookPassage(
+                spanish: spanish,
+                english: translation.isEmpty ? nil : translation
+            )
+        }
+    }
     var characterProfile: GameCharacter? { GameCharacter.storyteller(named: storyteller) }
 
     var portraitAssetName: String {
@@ -37,6 +48,11 @@ struct StoryBook: Identifiable, Hashable, Sendable {
     var backgroundAssetName: String { environment.backdropAssetName }
 
     var environment: BookEnvironment { BookEnvironment.forBook(id: id) }
+}
+
+struct StoryBookPassage: Equatable, Sendable {
+    let spanish: String
+    let english: String?
 }
 
 struct StoryBookCover: Codable, Hashable, Sendable {
