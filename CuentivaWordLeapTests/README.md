@@ -4,9 +4,15 @@ Startup coverage: `BinaryStoryLibraryTests` compares every bundled binary book
 against the manuscript and cover metadata, including order and punctuation. It
 rejects malformed headers, invalid offsets/counts, invalid UTF-8 and duplicate IDs.
 `LibraryViewModelTests` checks that readiness includes saved locks and balance,
-revisits stay ready, and a corrupt library can recover through retry. `AppModelTests`
+revisits stay ready, a corrupt library can recover through retry, and a failed
+remote refresh preserves the playable bundled catalogue. `AppModelTests`
 checks that the launch signal starts loading once. Launch visuals still need an iOS check.
 See `../Library-startup.md` for regeneration and stale-asset checks.
+
+Settings coverage: `SettingsFeatureTests` verifies restoration, persistence and
+safe fallback from an obsolete stored theme. `ThemeManagerTests` verifies that
+the presentation palette reads and writes the Feature-owned selection rather
+than owning a second persistence path.
 
 Persistent treasure coverage: `DoubloonBalanceTests` checks duplicate/lower reports,
 checkpoint-safe crediting, leaving during a save, fresh replay earnings, invalid counts,

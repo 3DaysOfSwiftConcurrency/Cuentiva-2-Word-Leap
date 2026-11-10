@@ -16,7 +16,11 @@
 
 Existing `LettersLandmark` and character sprites are reused. No new generated artwork is required. The original painting and all gameplay/parallax assets remain intact.
 
-`WorldBackdrop` and `worldPanel` are stateless presentation components. `ThemeManager` supplies the shared palette; the existing feature/view-model ownership of navigation, locking, completion, rewards and persistence is unchanged by this visual pass. The progressive gameplay-background schedule is also unchanged.
+`WorldBackdrop` and `worldPanel` are stateless presentation components. `SettingsFeature`
+owns the selected theme and its existing `selectedWordLeapTheme` persistence key;
+`ThemeManager` adapts that selection into the shared SwiftUI palette. Feature/ViewModel
+ownership of navigation, locking, completion and rewards remains unchanged. The
+progressive gameplay-background schedule is also unchanged.
 
 ## Accessibility and layout
 
