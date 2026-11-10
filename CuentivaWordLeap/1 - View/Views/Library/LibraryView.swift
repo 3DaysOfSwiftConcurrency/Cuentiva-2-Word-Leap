@@ -33,13 +33,13 @@ struct LibraryView: View {
                     Spacer()
                     HStack(spacing: 7) {
                         DoubloonArtwork(size: 30)
-                        Text(viewModel.doubloonBalance, format: .number)
+                        Text(viewModel.doubloonBalanceText)
                             .font(.headline.monospacedDigit())
                             .foregroundStyle(themeManager.worldText)
                     }
                     .shadow(color: .black.opacity(0.85), radius: 4, y: 1)
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("\(viewModel.doubloonBalance) doubloons")
+                    .accessibilityLabel(viewModel.doubloonAccessibilityLabel)
                     .allowsHitTesting(false)
                 }
                 .padding(.horizontal, 24)
@@ -64,8 +64,8 @@ struct LibraryView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 LibraryMapHeader(
-                    bookCount: viewModel.books.count,
-                    conqueredCount: viewModel.conqueredCount
+                    castleCountText: viewModel.castleCountText,
+                    conqueredCountText: viewModel.conqueredCountText
                 )
 
                 if let errorMessage = viewModel.errorMessage {
@@ -95,8 +95,8 @@ struct LibraryView: View {
 
 private struct LibraryMapHeader: View {
     @Environment(ThemeManager.self) private var themeManager
-    let bookCount: Int
-    let conqueredCount: Int
+    let castleCountText: String
+    let conqueredCountText: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -118,9 +118,9 @@ private struct LibraryMapHeader: View {
                 .font(.subheadline)
                 .foregroundStyle(themeManager.worldSecondaryText)
             HStack(spacing: 8) {
-                Label("\(bookCount) castles", systemImage: "map.fill")
+                Label(castleCountText, systemImage: "map.fill")
                 Text("·")
-                Label("\(conqueredCount) conquered", systemImage: "flag.checkered")
+                Label(conqueredCountText, systemImage: "flag.checkered")
             }
             .font(.caption.weight(.semibold))
             .foregroundStyle(themeManager.worldAccent)

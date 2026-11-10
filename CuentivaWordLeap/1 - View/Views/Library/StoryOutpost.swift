@@ -3,18 +3,13 @@ import SwiftUI
 /// An illustrated home on the trail. Access and numbering arrive from the feature.
 struct StoryOutpost: View {
     @Environment(ThemeManager.self) private var themeManager
-    let castle: AdventureCastle
+    let castle: AdventureCastlePresentation
     private let actionDiameter: CGFloat = 48
 
     private var isLeading: Bool { !castle.number.isMultiple(of: 2) }
     private var alignment: HorizontalAlignment { isLeading ? .leading : .trailing }
     private var frameAlignment: Alignment { isLeading ? .leading : .trailing }
     private var textAlignment: TextAlignment { isLeading ? .leading : .trailing }
-    private var status: String {
-        if !castle.isUnlocked { return "locked" }
-        return castle.isCompleted ? "conquered" : "ready to play"
-    }
-
     var body: some View {
         ZStack {
             MapTrail(isLeading: isLeading)
@@ -33,14 +28,14 @@ struct StoryOutpost: View {
                         .shadow(color: themeManager.worldAccent.opacity(castle.isUnlocked ? 0.30 : 0.06),
                             radius: 20, y: 6)
 
-                    Image(castle.book.characterProfile?.spriteAssetName ?? "WordLeapMora")
+                    Image(castle.characterAssetName)
                         .resizable().scaledToFit()
                         .frame(width: 100, height: 112)
                         .shadow(color: .black.opacity(0.65), radius: 8, y: 5)
                         .offset(x: 26, y: 6)
                 }
                 .overlay(alignment: .topLeading) {
-                    Text("\(castle.number)")
+                    Text(castle.numberText)
                         .font(.system(.title2, design: .serif, weight: .bold).monospacedDigit())
                         .foregroundStyle(themeManager.worldText)
                         .frame(minWidth: 44, minHeight: 44)
@@ -53,7 +48,7 @@ struct StoryOutpost: View {
                 .accessibilityHidden(true)
 
                 VStack(alignment: alignment, spacing: 6) {
-                    Text("CASTLE \(castle.number)")
+                    Text(castle.heading)
                         .font(.caption2.weight(.heavy)).tracking(2)
                         .foregroundStyle(themeManager.worldAccent)
                     Text(castle.book.title)
@@ -63,15 +58,7 @@ struct StoryOutpost: View {
                     Text(castle.book.englishTitle)
                         .font(.subheadline)
                         .foregroundStyle(themeManager.worldSecondaryText)
-                    Group {
-                        if !castle.isUnlocked {
-                            Label("Complete Castle \(castle.number - 1)", systemImage: "lock.fill")
-                        } else if castle.isCompleted {
-                            Label("Conquered · Play again", systemImage: "flag.checkered")
-                        } else {
-                            Label("\(castle.book.platformCount) word platforms", systemImage: "sparkles")
-                        }
-                    }
+                    Label(castle.statusText, systemImage: castle.statusSymbol)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(themeManager.worldAccent)
                     .padding(.top, 3)
@@ -82,8 +69,7 @@ struct StoryOutpost: View {
                 .frame(maxWidth: 280, alignment: frameAlignment)
                 .worldPanel()
                 .overlay(alignment: .top) {
-                    Image(systemName: castle.isUnlocked
-                        ? (castle.isCompleted ? "flag.checkered" : "play.fill") : "lock.fill")
+                    Image(systemName: castle.actionSymbol)
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundStyle(themeManager.worldShadow)
                         .frame(width: actionDiameter, height: actionDiameter)
@@ -101,10 +87,8 @@ struct StoryOutpost: View {
         }
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Castle \(castle.number), \(castle.book.title), \(status)")
-        .accessibilityHint(castle.isUnlocked
-            ? "Opens this book's word-leap level"
-            : "Complete Castle \(castle.number - 1) to unlock")
+        .accessibilityLabel(castle.accessibilityLabel)
+        .accessibilityHint(castle.accessibilityHint)
     }
 }
 

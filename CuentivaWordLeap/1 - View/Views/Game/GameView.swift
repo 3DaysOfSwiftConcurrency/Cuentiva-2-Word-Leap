@@ -2,13 +2,16 @@ import SpriteKit
 import SwiftUI
 
 struct GameView: View {
-    let book: StoryBook
     @Environment(ThemeManager.self) private var themeManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
-    @State private var viewModel = GameViewModel()
+    @State private var viewModel: GameViewModel
     @State private var isReadingBook = false
+
+    init(book: StoryBook) {
+        _viewModel = State(initialValue: GameViewModel(book: book))
+    }
 
     var body: some View {
         ZStack {
@@ -17,7 +20,7 @@ struct GameView: View {
                     .allowsHitTesting(!viewModel.isDeathPresented && !viewModel.isLevelComplete)
                     .ignoresSafeArea()
             } else {
-                WorldBackdrop(assetName: book.backgroundAssetName, shade: 0.3)
+                WorldBackdrop(assetName: viewModel.currentBook.backgroundAssetName, shade: 0.3)
                 if let error = viewModel.preparationError {
                     VStack(spacing: 16) {
                         Image(systemName: "lock.fill").font(.largeTitle)
@@ -31,10 +34,10 @@ struct GameView: View {
                     .padding(24)
                 } else {
                     VStack(spacing: 18) {
-                        Image(book.characterProfile?.spriteAssetName ?? "WordLeapMora")
+                        Image(viewModel.loadingCharacterAssetName)
                             .resizable().scaledToFit().frame(height: 140)
                             .accessibilityHidden(true)
-                        ProgressView("Opening \(book.title)…")
+                        ProgressView("Opening \(viewModel.currentBook.title)…")
                             .tint(themeManager.worldAccent)
                     }
                     .foregroundStyle(themeManager.worldText)
@@ -45,11 +48,16 @@ struct GameView: View {
             }
 
             VStack(spacing: 16) {
-                GameHUD(book: currentBook, wordsRead: viewModel.wordsRead, wordCount: activeWordCount,
-                        coins: viewModel.collectedDoubloons, leave: leave)
+                GameHUD(
+                    bookTitle: viewModel.currentBook.title,
+                    platformProgress: viewModel.platformProgress,
+                    collectedDoubloonText: viewModel.collectedDoubloonText,
+                    collectedDoubloonAccessibilityLabel: viewModel.collectedDoubloonAccessibilityLabel,
+                    leave: leave
+                )
                 Spacer()
                 if viewModel.scene != nil, !viewModel.isLevelComplete {
-                    GameReadingCard(word: viewModel.lastReadWord)
+                    GameReadingCard(text: viewModel.readingCardText)
                         .allowsHitTesting(false)
                 }
             }
@@ -60,7 +68,7 @@ struct GameView: View {
 
             if viewModel.isBookRevealed {
                 Color.black.opacity(0.32).ignoresSafeArea().allowsHitTesting(false)
-                BookCompletionReveal(book: currentBook, title: viewModel.completionTitle,
+                BookCompletionReveal(book: viewModel.currentBook, title: viewModel.completionTitle,
                     coins: viewModel.collectedDoubloons, hasNextLevel: viewModel.nextBook != nil,
                     read: { isReadingBook = true }, next: viewModel.startNextLevel, leave: leave)
                     .padding(.top, 70)
@@ -83,13 +91,14 @@ struct GameView: View {
         .onChange(of: scenePhase) { _, _ in viewModel.scene?.resetFrameClock() }
         .toolbar(.hidden, for: .navigationBar)
         .task {
-            await viewModel.prepare(book, reduceMotion: reduceMotion).value
+            await viewModel.prepare(reduceMotion: reduceMotion).value
         }
+        .onDisappear { viewModel.leaveLevel() }
         .toolbar(.hidden, for: .tabBar)
         .sheet(isPresented: $isReadingBook) {
             NavigationStack {
-                CompletedBookPages(book: currentBook)
-                    .navigationTitle(currentBook.title)
+                CompletedBookPages(book: viewModel.currentBook)
+                    .navigationTitle(viewModel.currentBook.title)
                     .navigationBarTitleDisplayMode(.inline)
                     .worldNavigation()
                     .toolbar {
@@ -100,12 +109,6 @@ struct GameView: View {
             }
             .tint(themeManager.worldAccent)
         }
-    }
-
-    private var currentBook: StoryBook { viewModel.activeLevel?.book ?? book }
-
-    private var activeWordCount: Int {
-        viewModel.activeLevel?.words.count ?? currentBook.platformCount
     }
 
     private func leave() {
@@ -120,10 +123,10 @@ struct GameView: View {
 
 private struct GameHUD: View {
     @Environment(ThemeManager.self) private var themeManager
-    let book: StoryBook
-    let wordsRead: Int
-    let wordCount: Int
-    let coins: Int
+    let bookTitle: String
+    let platformProgress: String
+    let collectedDoubloonText: String
+    let collectedDoubloonAccessibilityLabel: String
     let leave: () -> Void
 
     var body: some View {
@@ -138,8 +141,8 @@ private struct GameHUD: View {
             .accessibilityLabel("Leave adventure")
 
             VStack(spacing: 2) {
-                Text(book.title).font(.headline.weight(.heavy)).lineLimit(1)
-                Text("\(wordsRead) / \(wordCount) platforms")
+                Text(bookTitle).font(.headline.weight(.heavy)).lineLimit(1)
+                Text(platformProgress)
                     .font(.caption.weight(.bold)).monospacedDigit().opacity(0.82)
             }
             .foregroundStyle(themeManager.worldText)
@@ -150,22 +153,23 @@ private struct GameHUD: View {
 
             HStack(spacing: 4) {
                 DoubloonArtwork(size: 28)
-                Text("\(coins)").font(.headline.monospacedDigit()).foregroundStyle(themeManager.worldText)
+                Text(collectedDoubloonText)
+                    .font(.headline.monospacedDigit()).foregroundStyle(themeManager.worldText)
             }
             .padding(9)
             .worldPanel(cornerRadius: 24)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("\(coins) doubloons collected")
+            .accessibilityLabel(collectedDoubloonAccessibilityLabel)
         }
     }
 }
 
 private struct GameReadingCard: View {
     @Environment(ThemeManager.self) private var themeManager
-    let word: String
+    let text: String
 
     var body: some View {
-        Text(word.isEmpty ? "Touch to jump. Hold left or right to steer." : word)
+        Text(text)
             .font(.title3.weight(.bold))
             .foregroundStyle(themeManager.worldText)
             .frame(maxWidth: .infinity)

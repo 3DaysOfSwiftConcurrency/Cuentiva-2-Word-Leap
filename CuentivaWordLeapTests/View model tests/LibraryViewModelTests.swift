@@ -15,8 +15,15 @@ struct LibraryViewModelTests {
         await model.load().value
         #expect(model.isReady)
         #expect(model.doubloonBalance == 12)
+        #expect(model.doubloonBalanceText == "12")
+        #expect(model.doubloonAccessibilityLabel == "12 doubloons")
+        #expect(model.castleCountText == "3 castles")
+        #expect(model.conqueredCountText == "1 conquered")
         #expect(model.conqueredCount == 1)
         #expect(model.castles.map(\.isUnlocked) == [true, true, false])
+        #expect(model.castles[0].statusText == "Conquered · Play again")
+        #expect(model.castles[1].statusText.contains("word platforms"))
+        #expect(model.castles[2].statusText == "Complete Castle 2")
         #expect(model.errorMessage == nil)
 
         let revisit = model.load()

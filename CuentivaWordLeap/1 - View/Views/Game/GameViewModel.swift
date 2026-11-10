@@ -4,6 +4,7 @@ import CoreGraphics
 
 @MainActor @Observable
 final class GameViewModel {
+    private let selectedBook: StoryBook
     private let wordLeapFeature: WordLeapFeature
     private let libraryFeature: LibraryFeature
     private var reduceMotion = false
@@ -16,15 +17,28 @@ final class GameViewModel {
     private(set) var lastReadWord = ""
     private(set) var isDeathPresented = false
 
-    init(wordLeapFeature: WordLeapFeature = AppModel.shared.wordLeapFeature,
-         libraryFeature: LibraryFeature = AppModel.shared.libraryFeature) {
+    init(
+        book: StoryBook,
+        wordLeapFeature: WordLeapFeature = AppModel.shared.wordLeapFeature,
+        libraryFeature: LibraryFeature = AppModel.shared.libraryFeature
+    ) {
+        selectedBook = book
         self.wordLeapFeature = wordLeapFeature
         self.libraryFeature = libraryFeature
     }
 
     var activeLevel: LevelPlan? { wordLeapFeature.activeLevel }
+    var currentBook: StoryBook { activeLevel?.book ?? selectedBook }
     var preparationError: String? { wordLeapFeature.preparationError }
     var wordsRead: Int { wordLeapFeature.landedWordCount }
+    var activeWordCount: Int { activeLevel?.words.count ?? currentBook.platformCount }
+    var loadingCharacterAssetName: String { currentBook.characterProfile?.spriteAssetName ?? "WordLeapMora" }
+    var platformProgress: String { "\(wordsRead) / \(activeWordCount) platforms" }
+    var collectedDoubloonText: String { "\(collectedDoubloons)" }
+    var collectedDoubloonAccessibilityLabel: String { "\(collectedDoubloons) doubloons collected" }
+    var readingCardText: String {
+        lastReadWord.isEmpty ? "Touch to jump. Hold left or right to steer." : lastReadWord
+    }
     var isLevelComplete: Bool { preparationError == nil && wordLeapFeature.isLevelComplete }
     var gameOverStatistics: [GameStatistic] {
         let stats = wordLeapFeature.runStatistics
@@ -51,6 +65,10 @@ final class GameViewModel {
             return "Book completed!"
         }
         return "Book \(number) completed!"
+    }
+
+    func prepare(reduceMotion: Bool = false) -> Task<Void, Never> {
+        prepare(selectedBook, reduceMotion: reduceMotion)
     }
 
     func prepare(_ book: StoryBook, reduceMotion: Bool = false, continuingRun: Bool = false) -> Task<Void, Never> {
