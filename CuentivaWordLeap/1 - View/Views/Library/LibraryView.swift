@@ -55,7 +55,6 @@ struct LibraryView: View {
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar(.hidden, for: .navigationBar)
             .task { await viewModel.load().value }
-            .onAppear { _ = viewModel.refreshProgress() }
             .navigationDestination(item: $viewModel.selectedBook) { book in GameView(book: book) }
         }
     }

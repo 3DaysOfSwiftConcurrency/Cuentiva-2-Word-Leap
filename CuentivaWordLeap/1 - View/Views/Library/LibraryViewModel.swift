@@ -39,7 +39,6 @@ final class LibraryViewModel {
 
     func load() -> Task<Void, Never> { libraryFeature.load() }
     func refresh() -> Task<Void, Never> { libraryFeature.refresh() }
-    func refreshProgress() -> Task<Void, Never> { libraryFeature.refreshProgress() }
 }
 
 struct AdventureCastlePresentation: Identifiable {
