@@ -4,12 +4,18 @@ actor CuentivaBookRepository {
     private let networkingManager: NetworkingManager
     private var cachedBooks: [StoryBook]?
     private let bundledLibraryURL: URL?
-    private let githubStoriesURL = URL(string: "https://raw.githubusercontent.com/3DaysOfSwift/Cuentiva/main/content/editorial/stories.txt")
+    private let githubStoriesURL: URL?
 
-    init(networkingManager: NetworkingManager,
-         bundledLibraryURL: URL? = Bundle.main.url(forResource: "Library", withExtension: "dat")) {
+    init(
+        networkingManager: NetworkingManager,
+        bundledLibraryURL: URL? = Bundle.main.url(forResource: "Library", withExtension: "dat"),
+        githubStoriesURL: URL? = URL(
+            string: "https://raw.githubusercontent.com/3DaysOfSwift/Cuentiva/main/content/editorial/stories.txt"
+        )
+    ) {
         self.networkingManager = networkingManager
         self.bundledLibraryURL = bundledLibraryURL
+        self.githubStoriesURL = githubStoriesURL
     }
 
     func books() throws -> [StoryBook] {

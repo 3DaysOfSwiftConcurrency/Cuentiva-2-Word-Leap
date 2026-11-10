@@ -12,6 +12,8 @@ final class LibraryFeature {
     private(set) var isReady = false
     @ObservationIgnored private var loadingTask: Task<Void, Never>?
     @ObservationIgnored private var progressRefreshTask: Task<Void, Never>?
+    private var loadingOperation: LibraryLoadingOperation?
+    private var loadingRevision = 0
 
     init(bookRepository: CuentivaBookRepository, levelProgressStore: LevelProgressStore) {
         self.bookRepository = bookRepository
@@ -56,17 +58,37 @@ final class LibraryFeature {
 
     func load() -> Task<Void, Never> {
         if let loadingTask { return loadingTask }
-        let task = Task { [bookRepository, levelProgressStore] in
-            await self.loadBooks(from: bookRepository, levelProgressStore: levelProgressStore)
-        }
-        loadingTask = task
-        return task
+        return beginLoading(.bundled, after: nil)
     }
 
     func refresh() -> Task<Void, Never> {
-        if let loadingTask { return loadingTask }
+        if loadingOperation == .remote, let loadingTask { return loadingTask }
+        return beginLoading(.remote, after: loadingTask)
+    }
+
+    private func beginLoading(
+        _ operation: LibraryLoadingOperation,
+        after predecessor: Task<Void, Never>?
+    ) -> Task<Void, Never> {
+        loadingRevision += 1
+        let revision = loadingRevision
+        loadingOperation = operation
+        isLoading = true
         let task = Task { [bookRepository, levelProgressStore] in
-            await self.refreshBooks(from: bookRepository, levelProgressStore: levelProgressStore)
+            defer {
+                if self.loadingRevision == revision {
+                    self.isLoading = false
+                    self.loadingTask = nil
+                    self.loadingOperation = nil
+                }
+            }
+            await predecessor?.value
+            switch operation {
+            case .bundled:
+                await self.loadBooks(from: bookRepository, levelProgressStore: levelProgressStore)
+            case .remote:
+                await self.refreshBooks(from: bookRepository, levelProgressStore: levelProgressStore)
+            }
         }
         loadingTask = task
         return task
@@ -109,8 +131,6 @@ final class LibraryFeature {
         from repository: CuentivaBookRepository,
         levelProgressStore: LevelProgressStore
     ) async {
-        isLoading = true
-        defer { isLoading = false; loadingTask = nil }
         do {
             async let catalogue = repository.books()
             async let completed = levelProgressStore.completedBookIDs()
@@ -130,8 +150,6 @@ final class LibraryFeature {
         from repository: CuentivaBookRepository,
         levelProgressStore: LevelProgressStore
     ) async {
-        isLoading = true
-        defer { isLoading = false; loadingTask = nil }
         await refreshDoubloonBalance()
         do {
             books = try await repository.refreshFromGitHub()
@@ -140,4 +158,9 @@ final class LibraryFeature {
         }
         catch { loadError = "GitHub could not refresh the collection. Your bundled books are still ready to play." }
     }
+}
+
+private enum LibraryLoadingOperation: Equatable {
+    case bundled
+    case remote
 }

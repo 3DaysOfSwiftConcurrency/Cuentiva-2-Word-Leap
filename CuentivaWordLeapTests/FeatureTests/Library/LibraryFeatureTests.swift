@@ -4,6 +4,27 @@ import Testing
 
 @MainActor
 struct LibraryFeatureTests {
+    @Test func remoteRefreshQueuedDuringBundledLoadStillRuns() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        let libraryURL = fixture.directory.appendingPathComponent("Library.dat")
+        let remoteManuscript = Data("@one|Pipa|Uno remoto|Remote One|A1\nHola.|Hello.\n".utf8)
+        let repository = CuentivaBookRepository(
+            networkingManager: NetworkingManager { _ in remoteManuscript },
+            bundledLibraryURL: libraryURL
+        )
+        let library = LibraryFeature(bookRepository: repository, levelProgressStore: fixture.progress)
+
+        let bundledLoad = library.load()
+        let remoteRefresh = library.refresh()
+        await bundledLoad.value
+        await remoteRefresh.value
+
+        #expect(library.books.map(\.title) == ["Uno remoto"])
+        #expect(library.loadError == nil)
+        #expect(!library.isLoading)
+    }
+
     @Test func allBundledCastlesUnlockInNumberedOrder() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
