@@ -54,6 +54,27 @@ struct LibraryViewModelTests {
         #expect(model.errorMessage == nil)
     }
 
+    @Test func failedRemoteRefreshKeepsTheBundledLibraryPlayable() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        let repository = CuentivaBookRepository(
+            networkingManager: NetworkingManager { _ in throw URLError(.notConnectedToInternet) },
+            bundledLibraryURL: fixture.directory.appendingPathComponent("Library.dat")
+        )
+        let library = LibraryFeature(bookRepository: repository, levelProgressStore: fixture.progress)
+        let model = LibraryViewModel(libraryFeature: library)
+
+        await model.load().value
+        let bundledBookIDs = model.books.map(\.id)
+        await model.refresh().value
+
+        #expect(model.books.map(\.id) == bundledBookIDs)
+        #expect(model.isReady)
+        #expect(!model.isLoading)
+        #expect(model.errorMessage ==
+            "GitHub could not refresh the collection. Your bundled books are still ready to play.")
+    }
+
     @Test func balanceLoadsSavedTreasureAndReflectsNewGameplayCredits() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
