@@ -38,35 +38,44 @@ actor CuentivaBookRepository {
         return books
     }
 
-    static func decode(_ data: Data, covers: [String: StoryBookCover] = [:]) throws -> [StoryBook] {
-        guard let manuscript = String(data: data, encoding: .utf8) else { throw CocoaError(.fileReadCorruptFile) }
+    static func decode(_ manuscriptData: Data, covers: [String: StoryBookCover] = [:]) throws -> [StoryBook] {
+        guard let manuscript = String(data: manuscriptData, encoding: .utf8) else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
         var books: [StoryBook] = []
         var header: (id: String, storyteller: String, title: String, englishTitle: String)?
         var passages: [String] = []
         var translations: [String] = []
-        func finishBook() {
-            if let header {
-                books.append(StoryBook(id: header.id, storyteller: header.storyteller,
-                    title: header.title, englishTitle: header.englishTitle, spanishPassages: passages,
-                    englishPassages: translations, cover: covers[header.id] ?? StoryBookCover()))
+        func finishBook() throws {
+            guard let header else { return }
+            guard !header.id.isEmpty, !header.storyteller.isEmpty,
+                  !header.title.isEmpty, !header.englishTitle.isEmpty,
+                  !passages.isEmpty, passages.count == translations.count else {
+                throw CocoaError(.fileReadCorruptFile)
             }
+            books.append(StoryBook(id: header.id, storyteller: header.storyteller,
+                title: header.title, englishTitle: header.englishTitle, spanishPassages: passages,
+                englishPassages: translations, cover: covers[header.id] ?? StoryBookCover()))
         }
         for line in manuscript.split(whereSeparator: \.isNewline).map(String.init) {
             if line.hasPrefix("@") {
-                finishBook()
+                try finishBook()
                 let fields = line.dropFirst().split(separator: "|", maxSplits: 4).map(String.init)
                 guard fields.count == 5 else { throw CocoaError(.fileReadCorruptFile) }
                 header = (fields[0], fields[1], fields[2], fields[3])
                 passages = []
                 translations = []
             } else if line != "---", let spanish = line.split(separator: "|", maxSplits: 1).first?.trimmingCharacters(in: .whitespaces), !spanish.isEmpty {
+                guard header != nil else { throw CocoaError(.fileReadCorruptFile) }
                 passages.append(spanish)
                 let parts = line.split(separator: "|", maxSplits: 1, omittingEmptySubsequences: false)
                 translations.append(parts.count > 1 ? parts[1].trimmingCharacters(in: .whitespaces) : "")
             }
         }
-        finishBook()
-        guard !books.isEmpty else { throw CocoaError(.fileReadCorruptFile) }
+        try finishBook()
+        guard !books.isEmpty, Set(books.map(\.id)).count == books.count else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
         return books
     }
 }

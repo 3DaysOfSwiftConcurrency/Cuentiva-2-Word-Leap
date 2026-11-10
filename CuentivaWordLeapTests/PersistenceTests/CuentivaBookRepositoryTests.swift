@@ -19,4 +19,20 @@ struct CuentivaBookRepositoryTests {
         #expect(books[0].englishPassages == ["Mora finds a crown."])
         #expect(books[0].cover == cover)
     }
+
+    @Test func rejectsIncompleteAndDuplicateRemoteBooks() {
+        let malformedManuscripts = [
+            "@missing-passages|Pipa|Sin historia|No Story|Description",
+            "@missing-title|Pipa||No Title|Description\nPipa salta. | Pipa jumps.",
+            "@duplicate|Pipa|Uno|One|Description\nPipa salta. | Pipa jumps.\n"
+                + "@duplicate|Mora|Dos|Two|Description\nMora mira. | Mora looks.",
+            "A passage without a book. | An orphaned passage."
+        ]
+
+        for manuscript in malformedManuscripts {
+            #expect(throws: CocoaError.self) {
+                try CuentivaBookRepository.decode(Data(manuscript.utf8))
+            }
+        }
+    }
 }
