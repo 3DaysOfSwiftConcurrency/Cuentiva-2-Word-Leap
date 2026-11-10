@@ -6,8 +6,26 @@ struct StoryBook: Identifiable, Hashable, Sendable {
     let title: String
     let englishTitle: String
     let spanishPassages: [String]
-    var englishPassages: [String] = []
-    var cover: StoryBookCover = StoryBookCover()
+    let englishPassages: [String]
+    let cover: StoryBookCover
+
+    init(
+        id: String,
+        storyteller: String,
+        title: String,
+        englishTitle: String,
+        spanishPassages: [String],
+        englishPassages: [String] = [],
+        cover: StoryBookCover = StoryBookCover()
+    ) {
+        self.id = id
+        self.storyteller = storyteller
+        self.title = title
+        self.englishTitle = englishTitle
+        self.spanishPassages = spanishPassages
+        self.englishPassages = englishPassages
+        self.cover = cover
+    }
 
     var platformCount: Int { spanishPassages.flatMap(SpanishWordTokenizer.platformTokens).count }
     var characterProfile: GameCharacter? { GameCharacter.storyteller(named: storyteller) }
@@ -22,9 +40,15 @@ struct StoryBook: Identifiable, Hashable, Sendable {
 }
 
 struct StoryBookCover: Codable, Hashable, Sendable {
-    var level = "A1"
-    var symbol = "book.closed"
-    var palette = 0
+    let level: String
+    let symbol: String
+    let palette: Int
+
+    init(level: String = "A1", symbol: String = "book.closed", palette: Int = 0) {
+        self.level = level
+        self.symbol = symbol
+        self.palette = palette
+    }
 }
 
 enum SpanishWordTokenizer {

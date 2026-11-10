@@ -3,8 +3,20 @@ import Foundation
 struct LevelPlan: Sendable {
     let book: StoryBook
     let words: [String]
-    var verbIndices: Set<Int> = []
-    var verbCountingAvailable = true
+    let verbIndices: Set<Int>
+    let verbCountingAvailable: Bool
+
+    init(
+        book: StoryBook,
+        words: [String],
+        verbIndices: Set<Int> = [],
+        verbCountingAvailable: Bool = true
+    ) {
+        self.book = book
+        self.words = words
+        self.verbIndices = verbIndices
+        self.verbCountingAvailable = verbCountingAvailable
+    }
 }
 
 actor LevelPlanBuilder {
