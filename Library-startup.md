@@ -93,8 +93,10 @@ The repository reads this bundled binary on its actor and caches the resulting
 books. Startup does not parse the manuscript/metadata JSON or contact GitHub.
 Level geometry is still built when a book is played; the separate verb vocabulary
 is unchanged. Manual pull-to-refresh still retrieves the editorial manuscript
-and updates the in-memory catalogue; this change does not add downloaded-file
-persistence or background catalogue updates.
+and updates the in-memory catalogue only after the complete manuscript validates.
+Incomplete books, duplicate IDs and orphan passage content are rejected, leaving
+the playable bundled catalogue intact. This does not add downloaded-file persistence
+or background catalogue updates.
 
 ## Regeneration and validation
 
@@ -121,13 +123,14 @@ The binary reader rejects unknown versions, truncated/out-of-bounds tables,
 invalid UTF-8, duplicate book IDs and missing required story content. Input size,
 book count and passage count are bounded before allocation/materialization.
 
-## Verification — 23 October 2026
+## Verification — 10 November 2026
 
-- 65 core tests in 18 suites pass in the temporary macOS harness, including all
-  52 books' content parity and existing gameplay simulations.
-- Production Swift module emission and hosted-test iOS typechecking pass.
+- The bundled-data regeneration check passes for all 52 books, and source syntax,
+  asset metadata, editorial metadata, the storyboard and privacy manifest validate.
 - Full Xcode build remains blocked here by Interface Builder reporting
   `iOS 26.2 Platform Not Installed`, alongside CoreSimulator service errors.
+- A source-only compiler attempt reaches Swift compilation, where the host sandbox
+  blocks the Observation macro service before it can typecheck the complete module.
 - This does not establish visual launch continuity or measured launch performance.
   On device, cold-launch offline with saved coins and a completed castle: the first
   visible map must show the correct balance, completed castle and next unlock.

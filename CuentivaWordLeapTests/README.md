@@ -3,6 +3,9 @@
 Startup coverage: `BinaryStoryLibraryTests` compares every bundled binary book
 against the manuscript and cover metadata, including order and punctuation. It
 rejects malformed headers, invalid offsets/counts, invalid UTF-8 and duplicate IDs.
+`CuentivaBookRepositoryTests` verifies that remote editorial refreshes reject
+incomplete books, duplicate IDs and passage content without a book header, so
+invalid downloaded content cannot replace the playable bundled catalogue.
 `LibraryViewModelTests` checks that readiness includes saved locks and balance,
 revisits stay ready, a corrupt library can recover through retry, and a failed
 remote refresh preserves the playable bundled catalogue. `AppModelTests`
@@ -72,7 +75,8 @@ and completing every bundled book across five viewport sizes at 30, 60 and 120 f
 with a 180 ms steering reaction delay. It also verifies coin contact, roughly 30
 collectibles per book, no duplicate collections after retry/resize, and safe completion.
 Floating-point positions use a small tolerance. Decoder tests cover the bilingual reader
-and original Cuentiva cover metadata; tokenizer tests cover full-stop platforms.
+and original Cuentiva cover metadata; `StoryBookTests` covers immutable bilingual
+passage pairing and missing translations; tokenizer tests cover full-stop platforms.
 
 These tests can also execute on macOS with the simulation, book decoder and their
 dependencies in a temporary Swift package. In that context the manuscript is a test
