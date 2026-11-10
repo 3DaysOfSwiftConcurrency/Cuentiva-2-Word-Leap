@@ -1,6 +1,7 @@
 import Foundation
 
 actor CuentivaBookRepository {
+    private static let maximumManuscriptSize = 5_000_000
     private let networkingManager: NetworkingManager
     private var cachedBooks: [StoryBook]?
     private let bundledLibraryURL: URL?
@@ -39,7 +40,8 @@ actor CuentivaBookRepository {
     }
 
     static func decode(_ manuscriptData: Data, covers: [String: StoryBookCover] = [:]) throws -> [StoryBook] {
-        guard let manuscript = String(data: manuscriptData, encoding: .utf8) else {
+        guard manuscriptData.count <= maximumManuscriptSize,
+              let manuscript = String(data: manuscriptData, encoding: .utf8) else {
             throw CocoaError(.fileReadCorruptFile)
         }
         var books: [StoryBook] = []
@@ -58,17 +60,25 @@ actor CuentivaBookRepository {
                 englishPassages: translations, cover: covers[header.id] ?? StoryBookCover()))
         }
         for line in manuscript.split(whereSeparator: \.isNewline).map(String.init) {
-            if line.hasPrefix("@") {
+            let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+            if trimmedLine.hasPrefix("@") {
                 try finishBook()
-                let fields = line.dropFirst().split(separator: "|", maxSplits: 4).map(String.init)
-                guard fields.count == 5 else { throw CocoaError(.fileReadCorruptFile) }
+                let fields = trimmedLine.dropFirst()
+                    .split(separator: "|", maxSplits: 4, omittingEmptySubsequences: false)
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                guard fields.count == 5, fields.allSatisfy({ !$0.isEmpty }) else {
+                    throw CocoaError(.fileReadCorruptFile)
+                }
                 header = (fields[0], fields[1], fields[2], fields[3])
                 passages = []
                 translations = []
-            } else if line != "---", let spanish = line.split(separator: "|", maxSplits: 1).first?.trimmingCharacters(in: .whitespaces), !spanish.isEmpty {
+            } else if trimmedLine != "---",
+                      let spanish = trimmedLine.split(separator: "|", maxSplits: 1).first?
+                        .trimmingCharacters(in: .whitespaces),
+                      !spanish.isEmpty {
                 guard header != nil else { throw CocoaError(.fileReadCorruptFile) }
                 passages.append(spanish)
-                let parts = line.split(separator: "|", maxSplits: 1, omittingEmptySubsequences: false)
+                let parts = trimmedLine.split(separator: "|", maxSplits: 1, omittingEmptySubsequences: false)
                 translations.append(parts.count > 1 ? parts[1].trimmingCharacters(in: .whitespaces) : "")
             }
         }
