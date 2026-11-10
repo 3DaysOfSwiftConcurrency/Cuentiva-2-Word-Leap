@@ -11,6 +11,7 @@ final class LibraryFeature {
     private(set) var isLoading = false
     private(set) var isReady = false
     @ObservationIgnored private var loadingTask: Task<Void, Never>?
+    @ObservationIgnored private var progressRefreshTask: Task<Void, Never>?
 
     init(bookRepository: CuentivaBookRepository, levelProgressStore: LevelProgressStore) {
         self.bookRepository = bookRepository
@@ -72,10 +73,16 @@ final class LibraryFeature {
     }
 
     func refreshProgress() -> Task<Void, Never> {
-        Task { [levelProgressStore] in
-            completedBookIDs.formUnion(await levelProgressStore.completedBookIDs())
-            await refreshDoubloonBalance()
+        if let progressRefreshTask { return progressRefreshTask }
+        let task = Task { [levelProgressStore] in
+            async let completed = levelProgressStore.completedBookIDs()
+            async let balance = levelProgressStore.doubloonBalance()
+            completedBookIDs.formUnion(await completed)
+            doubloonBalance = max(doubloonBalance, await balance)
+            progressRefreshTask = nil
         }
+        progressRefreshTask = task
+        return task
     }
 
     func bankDoubloons(_ amount: Int) async {

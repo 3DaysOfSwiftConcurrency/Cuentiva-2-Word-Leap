@@ -3,6 +3,23 @@ import Testing
 
 @MainActor
 struct WordLeapFeatureTests {
+    @Test func aChangedBookRequestReplacesPreparationInsteadOfBeingDropped() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        await fixture.library.load().value
+        await fixture.library.recordCompletion(of: "one")
+        let firstBook = try #require(fixture.library.books.first { $0.id == "one" })
+        let secondBook = try #require(fixture.library.books.first { $0.id == "two" })
+
+        let firstPreparation = fixture.game.start(book: firstBook)
+        let secondPreparation = fixture.game.start(book: secondBook)
+        await firstPreparation.value
+        await secondPreparation.value
+
+        #expect(fixture.game.activeLevel?.book.id == secondBook.id)
+        #expect(fixture.game.preparationError == nil)
+    }
+
     @Test func completingTheFinalWordCompletesTheLevel() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }

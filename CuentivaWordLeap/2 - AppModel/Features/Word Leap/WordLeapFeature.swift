@@ -16,6 +16,8 @@ final class WordLeapFeature {
     // Completion must be saved before an immediate Next level request checks access.
     @ObservationIgnored private var completionTask: Task<Void, Never>?
     @ObservationIgnored private var doubloonSaveTask: Task<Void, Never>?
+    private var preparationRequest: PreparationRequest?
+    private var preparationRevision = 0
     private var creditedLevelDoubloons = 0
 
     init(levelPlanBuilder: LevelPlanBuilder, libraryFeature: LibraryFeature) {
@@ -24,9 +26,20 @@ final class WordLeapFeature {
     }
 
     func start(book: StoryBook, continuingRun: Bool = false) -> Task<Void, Never> {
-        if let preparationTask { return preparationTask }
+        let request = PreparationRequest(bookID: book.id, continuingRun: continuingRun)
+        if preparationRequest == request, let preparationTask { return preparationTask }
+        preparationTask?.cancel()
+        preparationRevision += 1
+        let revision = preparationRevision
+        preparationRequest = request
         preparationError = nil
         let task = Task { [levelPlanBuilder, libraryFeature, completionTask] in
+            defer {
+                if self.preparationRevision == revision {
+                    self.preparationTask = nil
+                    self.preparationRequest = nil
+                }
+            }
             do {
                 await completionTask?.value
                 try Task.checkCancellation()
@@ -34,16 +47,16 @@ final class WordLeapFeature {
                 try Task.checkCancellation()
                 let plan = await levelPlanBuilder.makePlan(for: playableBook)
                 try Task.checkCancellation()
+                guard self.preparationRevision == revision else { return }
                 if !continuingRun { self.runStatistics = AdventureRunStatistics() }
                 self.activeLevel = plan
                 self.creditedLevelDoubloons = 0
                 self.landedWordCount = 0
                 self.isLevelComplete = false
             } catch {
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled, self.preparationRevision == revision else { return }
                 self.preparationError = error.localizedDescription
             }
-            self.preparationTask = nil
         }
         preparationTask = task
         return task
@@ -87,10 +100,17 @@ final class WordLeapFeature {
     }
 
     func endLevel() {
+        preparationRevision += 1
         preparationTask?.cancel()
         preparationTask = nil
+        preparationRequest = nil
         activeLevel = nil
         landedWordCount = 0
         isLevelComplete = false
     }
+}
+
+private struct PreparationRequest: Equatable {
+    let bookID: String
+    let continuingRun: Bool
 }

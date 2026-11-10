@@ -4,6 +4,25 @@ import Testing
 
 @MainActor
 struct GameViewModelTests {
+    @Test func aChangedBookRequestBuildsOnlyTheLatestScene() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        await fixture.library.load().value
+        await fixture.library.recordCompletion(of: "one")
+        let model = GameViewModel(wordLeapFeature: fixture.game, libraryFeature: fixture.library)
+        let firstBook = try #require(fixture.library.books.first { $0.id == "one" })
+        let secondBook = try #require(fixture.library.books.first { $0.id == "two" })
+
+        let firstPreparation = model.prepare(firstBook)
+        let secondPreparation = model.prepare(secondBook)
+        await firstPreparation.value
+        await secondPreparation.value
+
+        #expect(model.activeLevel?.book.id == secondBook.id)
+        #expect(model.scene != nil)
+        model.leaveLevel()
+    }
+
     @Test func lockedCastleShowsAnErrorWithoutCreatingAScene() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }

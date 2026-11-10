@@ -8,6 +8,8 @@ final class GameViewModel {
     private let libraryFeature: LibraryFeature
     private var reduceMotion = false
     @ObservationIgnored private var preparationTask: Task<Void, Never>?
+    private var preparationRequest: GamePreparationRequest?
+    private var preparationRevision = 0
     private(set) var scene: WordLeapScene?
     private(set) var isBookRevealed = false
     private(set) var collectedDoubloons = 0
@@ -52,8 +54,17 @@ final class GameViewModel {
     }
 
     func prepare(_ book: StoryBook, reduceMotion: Bool = false, continuingRun: Bool = false) -> Task<Void, Never> {
+        let request = GamePreparationRequest(
+            bookID: book.id,
+            reduceMotion: reduceMotion,
+            continuingRun: continuingRun
+        )
+        if preparationRequest == request, let preparationTask { return preparationTask }
         self.reduceMotion = reduceMotion
         preparationTask?.cancel()
+        preparationRevision += 1
+        let revision = preparationRevision
+        preparationRequest = request
         scene?.removeAllActions()
         scene = nil
         lastReadWord = ""
@@ -61,8 +72,15 @@ final class GameViewModel {
         isBookRevealed = false
         collectedDoubloons = 0
         let task = Task {
+            defer {
+                if preparationRevision == revision {
+                    preparationTask = nil
+                    preparationRequest = nil
+                }
+            }
             await wordLeapFeature.start(book: book, continuingRun: continuingRun).value
-            guard !Task.isCancelled, preparationError == nil, let level = activeLevel,
+            guard !Task.isCancelled, preparationRevision == revision,
+                  preparationError == nil, let level = activeLevel,
                   level.book.id == book.id else { return }
             scene = WordLeapScene(size: CGSize(width: 390, height: 740), levelPlan: level,
                 reduceMotion: reduceMotion,
@@ -110,9 +128,18 @@ final class GameViewModel {
 
     func leaveLevel() {
         isDeathPresented = false
+        preparationRevision += 1
         preparationTask?.cancel()
+        preparationTask = nil
+        preparationRequest = nil
         scene?.removeAllActions()
         scene = nil
         wordLeapFeature.endLevel()
     }
+}
+
+private struct GamePreparationRequest: Equatable {
+    let bookID: String
+    let reduceMotion: Bool
+    let continuingRun: Bool
 }
