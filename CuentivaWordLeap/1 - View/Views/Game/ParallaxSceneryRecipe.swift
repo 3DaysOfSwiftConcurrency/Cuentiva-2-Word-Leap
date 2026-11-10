@@ -7,7 +7,7 @@ struct ParallaxSceneryRecipe {
     enum Particles {
         case stars, fireflies, pollen, mist
 
-        var count: Int {
+        var particleCount: Int {
             switch self {
             case .stars: 56
             case .fireflies: 24
@@ -19,7 +19,7 @@ struct ParallaxSceneryRecipe {
 
     struct Layer {
         let assetName: String
-        let count: Int
+        let spriteCount: Int
         let edgeOffset: CGFloat
         let initialHeight: CGFloat
         let heightStep: CGFloat
@@ -32,7 +32,9 @@ struct ParallaxSceneryRecipe {
     let layers: [Layer]
     let particles: Particles
 
-    var nodeCount: Int { 1 + particles.count + layers.reduce(0) { $0 + $1.count } }
+    var nodeCount: Int {
+        1 + particles.particleCount + layers.reduce(0) { $0 + $1.spriteCount }
+    }
 
     init(environment: BookEnvironment) {
         switch environment {
@@ -49,13 +51,13 @@ struct ParallaxSceneryRecipe {
         case .skyFalls:
             // Preserve the approved prototype's composition and motion.
             self.init(layers: [
-                Layer(assetName: "SkyFallsIslet", count: 4, edgeOffset: 0.42,
+                Layer(assetName: "SkyFallsIslet", spriteCount: 4, edgeOffset: 0.42,
                       initialHeight: -0.40, heightStep: 0.27, width: 0.24,
                       speed: 0.14, opacity: 0.62, mirrorsAlternateSprites: false),
-                Layer(assetName: "SkyFallsIsland", count: 4, edgeOffset: 0.53,
+                Layer(assetName: "SkyFallsIsland", spriteCount: 4, edgeOffset: 0.53,
                       initialHeight: -0.43, heightStep: 0.30, width: 0.43,
                       speed: 0.34, opacity: 1, mirrorsAlternateSprites: false),
-                Layer(assetName: "SkyFallsCloud", count: 4, edgeOffset: 0.54,
+                Layer(assetName: "SkyFallsCloud", spriteCount: 4, edgeOffset: 0.54,
                       initialHeight: -0.48, heightStep: 0.31, width: 0.60,
                       speed: 0.52, opacity: 0.82, mirrorsAlternateSprites: false)
             ], particles: .stars)
@@ -70,10 +72,10 @@ struct ParallaxSceneryRecipe {
     private init(prefix: String, particles: Particles) {
         self.particles = particles
         layers = [
-            Layer(assetName: prefix + "Landmark", count: 3, edgeOffset: 0.43,
+            Layer(assetName: prefix + "Landmark", spriteCount: 3, edgeOffset: 0.43,
                   initialHeight: -0.40, heightStep: 0.40, width: 0.30,
                   speed: 0.16, opacity: 0.85, mirrorsAlternateSprites: true),
-            Layer(assetName: prefix + "Foreground", count: 4, edgeOffset: 0.53,
+            Layer(assetName: prefix + "Foreground", spriteCount: 4, edgeOffset: 0.53,
                   initialHeight: -0.46, heightStep: 0.31, width: 0.46,
                   speed: 0.38, opacity: 1, mirrorsAlternateSprites: true)
         ]

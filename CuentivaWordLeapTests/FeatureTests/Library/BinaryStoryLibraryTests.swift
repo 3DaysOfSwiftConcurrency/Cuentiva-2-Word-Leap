@@ -21,44 +21,50 @@ struct BinaryStoryLibraryTests {
         let original = try CuentivaBookRepository.decode(resource("stories", "txt"), covers: covers)
         let library = try BinaryStoryLibrary(data: resource("Library", "dat"))
         let compiled = try library.books()
-        #expect(library.count == 52)
+        #expect(library.bookCount == 52)
         #expect(compiled == original)
         #expect(compiled.map(\.platformCount) == original.map(\.platformCount))
         #expect(throws: CocoaError.self) { try library.book(at: -1) }
-        #expect(throws: CocoaError.self) { try library.book(at: library.count) }
+        #expect(throws: CocoaError.self) { try library.book(at: library.bookCount) }
     }
 
     @Test(arguments: [0, 7, 15, 16, 167])
     func truncatedDataIsRejected(length: Int) throws {
-        let data = try resource("Library", "dat")
-        #expect(throws: CocoaError.self) { try BinaryStoryLibrary(data: Data(data.prefix(length))).books() }
+        let libraryData = try resource("Library", "dat")
+        #expect(throws: CocoaError.self) {
+            try BinaryStoryLibrary(data: Data(libraryData.prefix(length))).books()
+        }
     }
 
     @Test(arguments: ["magic", "version", "count", "stringOffset", "stringLength",
                       "utf8", "sentenceCount", "requiredSentences", "optionalSentences", "duplicateID"])
     func corruptTablesAreRejectedWithoutReadingOutsideTheFile(fault: String) throws {
-        var data = try resource("Library", "dat")
+        var libraryData = try resource("Library", "dat")
         switch fault {
-        case "magic": data[0] = 0
-        case "version": setWord(3, at: 8, in: &data)
-        case "count": setWord(.max, at: 12, in: &data)
-        case "stringOffset": setWord(.max, at: 16, in: &data)
-        case "stringLength": setWord(.max, at: 20, in: &data)
+        case "magic": libraryData[0] = 0
+        case "version": setWord(3, at: 8, in: &libraryData)
+        case "count": setWord(.max, at: 12, in: &libraryData)
+        case "stringOffset": setWord(.max, at: 16, in: &libraryData)
+        case "stringLength": setWord(.max, at: 20, in: &libraryData)
         case "utf8":
-            let offset = data.withUnsafeBytes { UInt32(littleEndian: $0.loadUnaligned(fromByteOffset: 16, as: UInt32.self)) }
-            data[Int(offset)] = 0xff
-        case "sentenceCount": setWord(.max, at: 16 + 100, in: &data)
-        case "requiredSentences": setWord(.max, at: 16 + 96, in: &data)
-        case "optionalSentences": setWord(1, at: 16 + 116, in: &data)
+            let offset = libraryData.withUnsafeBytes {
+                UInt32(littleEndian: $0.loadUnaligned(fromByteOffset: 16, as: UInt32.self))
+            }
+            libraryData[Int(offset)] = 0xff
+        case "sentenceCount": setWord(.max, at: 16 + 100, in: &libraryData)
+        case "requiredSentences": setWord(.max, at: 16 + 96, in: &libraryData)
+        case "optionalSentences": setWord(1, at: 16 + 116, in: &libraryData)
         case "duplicateID":
-            let firstID = data.subdata(in: 16..<24)
-            data.replaceSubrange(168..<176, with: firstID)
+            let firstID = libraryData.subdata(in: 16..<24)
+            libraryData.replaceSubrange(168..<176, with: firstID)
         default: Issue.record("Unexpected corruption case")
         }
-        #expect(throws: CocoaError.self) { try BinaryStoryLibrary(data: data).books() }
+        #expect(throws: CocoaError.self) { try BinaryStoryLibrary(data: libraryData).books() }
     }
 
-    private func setWord(_ value: UInt32, at offset: Int, in data: inout Data) {
-        for byte in 0..<4 { data[offset + byte] = UInt8(truncatingIfNeeded: value >> (byte * 8)) }
+    private func setWord(_ value: UInt32, at offset: Int, in libraryData: inout Data) {
+        for byte in 0..<4 {
+            libraryData[offset + byte] = UInt8(truncatingIfNeeded: value >> (byte * 8))
+        }
     }
 }

@@ -10,11 +10,11 @@ struct ParallaxSceneryRecipeTests {
             let recipe = ParallaxSceneryRecipe(environment: environment)
             #expect(recipe.layers.count >= 2)
             #expect(recipe.nodeCount <= 69)
-            #expect(recipe.particles.count > 0)
+            #expect(recipe.particles.particleCount > 0)
             for layer in recipe.layers {
                 #expect(usedAssets.insert(layer.assetName).inserted)
                 #expect(layer.assetName != environment.backdropAssetName)
-                #expect(layer.count > 0 && layer.count <= 4)
+                #expect(layer.spriteCount > 0 && layer.spriteCount <= 4)
             }
         }
     }

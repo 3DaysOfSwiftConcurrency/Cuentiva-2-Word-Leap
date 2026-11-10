@@ -48,15 +48,17 @@ final class GameViewModel {
     var isLevelComplete: Bool { preparationError == nil && wordLeapFeature.isLevelComplete }
     var gameOverStatistics: [GameStatistic] {
         let stats = wordLeapFeature.runStatistics
-        let seconds = Int(stats.activeSeconds)
+        let wholeSeconds = Int(stats.activeSeconds)
         return [
-            GameStatistic(title: "Levels completed", value: "\(stats.levelsCompleted)", symbol: "flag.checkered"),
-            GameStatistic(title: "Platforms reached", value: "\(stats.platformsReached)", symbol: "square.stack.3d.up.fill"),
-            GameStatistic(title: "Doubloons", value: "\(stats.doubloonsCollected)", symbol: "doubloon"),
-            GameStatistic(title: "Time played", value: String(format: "%d:%02d", seconds / 60, seconds % 60),
+            GameStatistic(title: "Levels completed", displayValue: "\(stats.levelsCompleted)", symbol: "flag.checkered"),
+            GameStatistic(title: "Platforms reached", displayValue: "\(stats.platformsReached)", symbol: "square.stack.3d.up.fill"),
+            GameStatistic(title: "Doubloons", displayValue: "\(stats.doubloonsCollected)", symbol: "doubloon"),
+            GameStatistic(title: "Time played",
+                displayValue: String(format: "%d:%02d", wholeSeconds / 60, wholeSeconds % 60),
                 symbol: "clock.fill", detail: "minutes : seconds"),
-            GameStatistic(title: "Words collected", value: "\(stats.wordsCollected)", symbol: "textformat.abc"),
-            GameStatistic(title: "Verbs recognised", value: stats.verbCountingAvailable ? "\(stats.verbsCollected)" : "—",
+            GameStatistic(title: "Words collected", displayValue: "\(stats.wordsCollected)", symbol: "textformat.abc"),
+            GameStatistic(title: "Verbs recognised",
+                displayValue: stats.verbCountingAvailable ? "\(stats.verbsCollected)" : "—",
                 symbol: "text.book.closed.fill", detail: stats.verbCountingAvailable ? "vocabulary estimate" : "unavailable")
         ]
     }

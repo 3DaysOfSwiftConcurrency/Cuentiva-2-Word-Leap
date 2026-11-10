@@ -3,7 +3,7 @@ import SwiftUI
 /// Display values prepared by GameViewModel; this component owns no gameplay rules.
 struct GameStatistic: Identifiable {
     let title: String
-    let value: String
+    let displayValue: String
     let symbol: String
     var detail: String = ""
     var id: String { title }
@@ -49,7 +49,7 @@ struct GameOverSummary: View {
                                         Image(systemName: statistic.symbol)
                                             .font(.title3).foregroundStyle(themeManager.worldAccent).frame(height: 25)
                                     }
-                                    Text(statistic.value)
+                                    Text(statistic.displayValue)
                                         .font(.system(.title2, design: .rounded, weight: .heavy))
                                         .monospacedDigit()
                                     Text(statistic.title).font(.caption.weight(.semibold))

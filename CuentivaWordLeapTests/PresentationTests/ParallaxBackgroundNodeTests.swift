@@ -10,15 +10,15 @@ struct ParallaxBackgroundNodeTests {
         for environment in BookEnvironment.allCases {
             let background = ParallaxBackgroundNode(environment: environment, reduceMotion: false)
             background.layout(in: CGSize(width: 390, height: 844))
-            let count = background.children.count
+            let initialNodeCount = background.children.count
             #expect(count == ParallaxSceneryRecipe(environment: environment).nodeCount)
             for altitude in stride(from: CGFloat(0), through: 100_000, by: 250) {
                 background.update(cameraClimb: altitude, activeSeconds: 30)
-                #expect(background.children.count == count)
+                #expect(background.children.count == initialNodeCount)
                 #expect(background.children.allSatisfy { $0.physicsBody == nil && $0.position.y.isFinite })
             }
             background.layout(in: CGSize(width: 844, height: 390))
-            #expect(background.children.count == count)
+            #expect(background.children.count == initialNodeCount)
         }
     }
 

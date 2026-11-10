@@ -3,8 +3,8 @@ import Foundation
 /// Reads Cuentiva's version-two CUENLIB offset tables and UTF-8 strings.
 /// Word Leap uses the story/cover fields, not the reader app's learning metadata.
 struct BinaryStoryLibrary: Sendable {
-    private let data: Data
-    let count: Int
+    private let libraryData: Data
+    let bookCount: Int
     private static let bookStride = 152
 
     init(data: Data) throws {
@@ -12,11 +12,11 @@ struct BinaryStoryLibrary: Sendable {
               data.prefix(8) == Data("CUENLIB\0".utf8) else {
             throw CocoaError(.fileReadCorruptFile)
         }
-        self.data = data
+        libraryData = data
         let version = Self.word(data, at: 8)
-        count = Int(Self.word(data, at: 12))
-        guard version == 2, count > 0, count <= 20_000,
-              count <= (data.count - 16) / Self.bookStride else {
+        bookCount = Int(Self.word(data, at: 12))
+        guard version == 2, bookCount > 0, bookCount <= 20_000,
+              bookCount <= (data.count - 16) / Self.bookStride else {
             throw CocoaError(.fileReadCorruptFile)
         }
     }
@@ -28,14 +28,14 @@ struct BinaryStoryLibrary: Sendable {
     }
 
     func books() throws -> [StoryBook] {
-        let books = try (0..<count).map(book(at:))
+        let books = try (0..<bookCount).map(book(at:))
         guard Set(books.map(\.id)).count == books.count else { throw CocoaError(.fileReadCorruptFile) }
         return books
     }
 
-    func book(at index: Int) throws -> StoryBook {
-        guard (0..<count).contains(index) else { throw CocoaError(.fileReadCorruptFile) }
-        let base = 16 + index * Self.bookStride
+    func book(at bookIndex: Int) throws -> StoryBook {
+        guard (0..<bookCount).contains(bookIndex) else { throw CocoaError(.fileReadCorruptFile) }
+        let base = 16 + bookIndex * Self.bookStride
         let passages = try sentences(at: base + 96, optional: false)
             + sentences(at: base + 112, optional: true)
             + sentences(at: base + 140, optional: true)
@@ -54,17 +54,17 @@ struct BinaryStoryLibrary: Sendable {
 
     private func sentences(at descriptor: Int, optional: Bool) throws -> [(spanish: String, english: String)] {
         let offset = try uint(at: descriptor)
-        let count = Int(try uint(at: descriptor + 4))
+        let sentenceCount = Int(try uint(at: descriptor + 4))
         if offset == .max {
-            guard optional, count == 0 else { throw CocoaError(.fileReadCorruptFile) }
+            guard optional, sentenceCount == 0 else { throw CocoaError(.fileReadCorruptFile) }
             return []
         }
         let start = Int(offset)
         try check(start, length: 0)
-        guard count <= 10_000, count <= (data.count - start) / 32 else {
+        guard sentenceCount <= 10_000, sentenceCount <= (libraryData.count - start) / 32 else {
             throw CocoaError(.fileReadCorruptFile)
         }
-        return try (0..<count).map { index in
+        return try (0..<sentenceCount).map { index in
             let record = start + index * 32
             return (try text(at: record + 8), try text(at: record + 16))
         }
@@ -74,7 +74,7 @@ struct BinaryStoryLibrary: Sendable {
         let offset = Int(try uint(at: descriptor))
         let length = Int(try uint(at: descriptor + 4))
         try check(offset, length: length)
-        guard let text = String(data: data.subdata(in: offset..<(offset + length)), encoding: .utf8) else {
+        guard let text = String(data: libraryData.subdata(in: offset..<(offset + length)), encoding: .utf8) else {
             throw CocoaError(.fileReadCorruptFile)
         }
         return text
@@ -82,16 +82,19 @@ struct BinaryStoryLibrary: Sendable {
 
     private func uint(at offset: Int) throws -> UInt32 {
         try check(offset, length: 4)
-        return Self.word(data, at: offset)
+        return Self.word(libraryData, at: offset)
     }
 
     private func check(_ offset: Int, length: Int) throws {
-        guard offset >= 0, length >= 0, offset <= data.count, length <= data.count - offset else {
+        guard offset >= 0, length >= 0, offset <= libraryData.count,
+              length <= libraryData.count - offset else {
             throw CocoaError(.fileReadCorruptFile)
         }
     }
 
-    private static func word(_ data: Data, at offset: Int) -> UInt32 {
-        data.withUnsafeBytes { UInt32(littleEndian: $0.loadUnaligned(fromByteOffset: offset, as: UInt32.self)) }
+    private static func word(_ libraryData: Data, at offset: Int) -> UInt32 {
+        libraryData.withUnsafeBytes {
+            UInt32(littleEndian: $0.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
+        }
     }
 }

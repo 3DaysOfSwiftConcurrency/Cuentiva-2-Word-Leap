@@ -43,7 +43,7 @@ final class ParallaxBackgroundNode: SKNode {
         scenery.removeAll()
         addParticles()
         for (depth, layer) in recipe.layers.enumerated() {
-            for index in 0..<layer.count {
+            for index in 0..<layer.spriteCount {
                 let isLeft = index.isMultiple(of: 2)
                 let side: CGFloat = isLeft ? -1 : 1
                 addSprite(layer.assetName, x: side * size.width * layer.edgeOffset,
@@ -85,7 +85,7 @@ final class ParallaxBackgroundNode: SKNode {
     private func addParticles() {
         // Reusable vector sparkles avoid large transparent texture sheets.
         // Deterministic placement means retries and resizing do not reshuffle the sky.
-        for index in 0..<recipe.particles.count {
+        for index in 0..<recipe.particles.particleCount {
             let isSparkle = recipe.particles == .stars && index.isMultiple(of: 5)
             let radius: CGFloat = isSparkle ? 3.5 : 0.8
             let star: SKShapeNode
