@@ -6,11 +6,21 @@ final class AppModel {
     let libraryFeature: LibraryFeature
     let wordLeapFeature: WordLeapFeature
     let settingsFeature: SettingsFeature
+    private var hasLaunched: Bool
 
     init(libraryFeature: LibraryFeature, wordLeapFeature: WordLeapFeature, settingsFeature: SettingsFeature) {
         self.libraryFeature = libraryFeature
         self.wordLeapFeature = wordLeapFeature
         self.settingsFeature = settingsFeature
+        hasLaunched = false
+    }
+
+    /// Signals shared model work synchronously while leaving the interface unblocked.
+    @discardableResult
+    func applicationDidFinishLaunching() -> Task<Void, Never>? {
+        guard !hasLaunched else { return nil }
+        hasLaunched = true
+        return libraryFeature.load()
     }
 
     static func live() -> AppModel {

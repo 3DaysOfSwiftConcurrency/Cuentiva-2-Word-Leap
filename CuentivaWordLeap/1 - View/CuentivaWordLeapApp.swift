@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct CuentivaWordLeapApp: App {
+    @UIApplicationDelegateAdaptor(CuentivaWordLeapAppDelegate.self) private var appDelegate
     @State private var themeManager = ThemeManager()
 
     var body: some Scene {
