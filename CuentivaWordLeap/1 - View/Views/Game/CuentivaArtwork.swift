@@ -11,7 +11,6 @@ enum CuentivaArtwork {
         Color(red: 0.67, green: 0.46, blue: 0.24)
     ]
 }
-
 struct DoubloonArtwork: View {
     var size: CGFloat = 28
 
@@ -125,41 +124,5 @@ struct BookCompletionReveal: View {
                 .frame(minHeight: geometry.size.height)
             }
         }
-    }
-}
-
-/// An illuminated reading surface inside the same world as the adventure.
-struct CompletedBookPages: View {
-    @Environment(ThemeManager.self) private var themeManager
-    let book: StoryBook
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                CompletedBookCover(book: book).frame(maxWidth: .infinity)
-                Text(book.englishTitle)
-                    .font(.system(.title2, design: .serif))
-                    .frame(maxWidth: .infinity)
-                    .multilineTextAlignment(.center)
-                    .padding(18).worldPanel()
-                ForEach(book.spanishPassages.indices, id: \.self) { index in
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(book.spanishPassages[index])
-                            .font(.system(.title3, design: .serif)).lineSpacing(5)
-                        if book.englishPassages.indices.contains(index), !book.englishPassages[index].isEmpty {
-                            Text(book.englishPassages[index])
-                                .foregroundStyle(themeManager.worldSecondaryText).lineSpacing(4)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(22).worldPanel()
-                }
-            }
-            .frame(maxWidth: 660)
-            .padding(24)
-            .frame(maxWidth: .infinity)
-        }
-        .foregroundStyle(themeManager.worldText)
-        .background { WorldBackdrop(shade: 0.32) }
     }
 }

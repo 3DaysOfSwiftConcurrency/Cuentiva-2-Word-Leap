@@ -97,7 +97,7 @@ struct GameView: View {
         .toolbar(.hidden, for: .tabBar)
         .sheet(isPresented: $isReadingBook) {
             NavigationStack {
-                CompletedBookPages(book: viewModel.currentBook)
+                CompletedBookPagesView(book: viewModel.currentBook)
                     .navigationTitle(viewModel.currentBook.title)
                     .navigationBarTitleDisplayMode(.inline)
                     .worldNavigation()
