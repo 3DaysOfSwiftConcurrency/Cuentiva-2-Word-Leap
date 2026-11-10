@@ -2,7 +2,9 @@
 
 Adventure keeps one WorldBackdrop in place while preparing its first presentation.
 There is no launch spinner, separate loading screen, empty castle map or visible
-zero-balance placeholder. LibraryFeature concurrently reads the local catalogue,
+zero-balance placeholder. The app delegate signals AppModel synchronously at launch;
+AppModel asks LibraryFeature to begin loading without blocking the interface. The
+Adventure screen joins that same Feature-owned task when needed. LibraryFeature concurrently reads the local catalogue,
 completed-castle IDs and doubloon balance. It publishes those values together on
 the main actor before setting isReady. LibraryViewModel exposes that readiness;
 LibraryView reveals the menu and noninteractive balance with a short opacity

@@ -44,8 +44,8 @@ publication. Its retained completion task outlives leaving the game and is await
 by the next start request. Existing progress refreshes merge monotonically so
 an older read cannot remove a newly published completion.
 
-LibraryViewModel owns selection. StoryOutpost only renders the provided castle
-snapshot. No access rules live in SwiftUI. Denied or unavailable gameplay entries
+LibraryViewModel owns selection and prepares each castle's display and accessibility
+values. StoryOutpost only renders that presentation. No access rules live in SwiftUI. Denied or unavailable gameplay entries
 show a recoverable message instead of an endless loading indicator.
 
 ## Manual checks

@@ -4,16 +4,15 @@ Startup coverage: `BinaryStoryLibraryTests` compares every bundled binary book
 against the manuscript and cover metadata, including order and punctuation. It
 rejects malformed headers, invalid offsets/counts, invalid UTF-8 and duplicate IDs.
 `LibraryViewModelTests` checks that readiness includes saved locks and balance,
-revisits stay ready, and a corrupt library can recover through retry. The core
-macOS harness passes 65 tests in 18 suites. Launch visuals still need an iOS check.
+revisits stay ready, and a corrupt library can recover through retry. `AppModelTests`
+checks that the launch signal starts loading once. Launch visuals still need an iOS check.
 See `../Library-startup.md` for regeneration and stale-asset checks.
 
 Persistent treasure coverage: `DoubloonBalanceTests` checks duplicate/lower reports,
 checkpoint-safe crediting, leaving during a save, fresh replay earnings, invalid counts,
 and overlapping credits/refreshes. `LevelProgressStoreTests` checks reopening a balance
 without changing completed castles. `LibraryViewModelTests` checks saved-balance loading
-and live gameplay updates. All six added balance cases execute in the core macOS harness
-(60 tests in 17 suites). The HUD and transparent pinned header still need iOS visual checks.
+and live gameplay updates. The HUD and transparent pinned header still need iOS visual checks.
 
 `FeatureTests/Library/LibraryFeatureTests.swift` checks numbered access for all
 52 castles, one-at-a-time unlocks, saved progress restoration, completed-book
@@ -82,7 +81,7 @@ checks that waiting and death add no time and checkpoint retries/resizing preser
 `LevelPlanBuilderTests` checks offline verb-form matching against the vocabulary reused
 from Verbos, plus the explicit unavailable state for a missing vocabulary. This is an
 estimate: homographs and verbs outside that teaching collection are not fully classified.
-`ViewModelTests/GameViewModelTests.swift` covers the summary, retry and fresh-start
+`View model tests/GameViewModelTests.swift` covers the summary, retry and fresh-start
 presentation through isolated features; it requires the hosted iOS test target.
 
 Device checks: fall, see the friendly skeleton transition, inspect the six summary tiles,
