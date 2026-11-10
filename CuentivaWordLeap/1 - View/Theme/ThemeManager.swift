@@ -1,22 +1,21 @@
 import Observation
 import SwiftUI
 
-enum WordLeapTheme: String, CaseIterable, Identifiable {
-    case system, storybook, sunrise, forest, ocean, twilight, midnight
-
-    var id: String { rawValue }
+extension WordLeapTheme {
     var title: String { rawValue.capitalized }
 }
 
 @MainActor @Observable
 final class ThemeManager {
-    private let storageKey = "selectedWordLeapTheme"
+    private let settingsFeature: SettingsFeature
+
     var selectedTheme: WordLeapTheme {
-        didSet { UserDefaults.standard.set(selectedTheme.rawValue, forKey: storageKey) }
+        get { settingsFeature.selectedTheme }
+        set { settingsFeature.selectTheme(newValue) }
     }
 
-    init() {
-        selectedTheme = WordLeapTheme(rawValue: UserDefaults.standard.string(forKey: storageKey) ?? "") ?? .system
+    init(settingsFeature: SettingsFeature = AppModel.shared.settingsFeature) {
+        self.settingsFeature = settingsFeature
     }
 
     // Illustrated screens keep light ink on dark surfaces in every colour theme.
