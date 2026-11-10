@@ -2,6 +2,7 @@ import SpriteKit
 import UIKit
 import SwiftUI
 
+@MainActor
 final class WordLeapScene: SKScene {
     private let levelPlan: LevelPlan
     private let reportLanding: @MainActor (_ wordIndex: Int, _ word: String) -> Void
@@ -107,7 +108,7 @@ final class WordLeapScene: SKScene {
             ]), .removeFromParent()]))
         }
         let collectedDoubloonCount = simulation.collectedCoins.count
-        Task { @MainActor in reportCoinCount(collectedDoubloonCount) }
+        reportCoinCount(collectedDoubloonCount)
     }
 
     private func addPlayer() {
@@ -201,7 +202,7 @@ final class WordLeapScene: SKScene {
         let activeSeconds = simulation.activeSeconds
         run(.sequence([.wait(forDuration: reduceMotion ? 0 : 0.8), .run { [weak self] in
             guard let self else { return }
-            Task { @MainActor in self.reportDeath(collectedDoubloons, activeSeconds) }
+            self.reportDeath(collectedDoubloons, activeSeconds)
         }]), withKey: "deathReveal")
     }
 
@@ -229,7 +230,7 @@ final class WordLeapScene: SKScene {
     private func reportProgress(at index: Int) {
         let platform = simulation.platforms[index]
         playLandingPulse(at: platform.frame)
-        Task { @MainActor in reportLanding(platform.index, platform.word) }
+        reportLanding(platform.index, platform.word)
         if index == simulation.platforms.count - 1 { beamUpToSafety() }
     }
 
@@ -260,7 +261,7 @@ final class WordLeapScene: SKScene {
             guard let self else { return }
             let collectedDoubloons = self.simulation.collectedCoins.count
             let activeSeconds = self.simulation.activeSeconds
-            Task { @MainActor in self.reportRescue(collectedDoubloons, activeSeconds) }
+            self.reportRescue(collectedDoubloons, activeSeconds)
         }]))
     }
 
