@@ -12,6 +12,10 @@ remote refresh preserves the playable bundled catalogue. `AppModelTests`
 checks that the launch signal starts loading once. Launch visuals still need an iOS check.
 See `../Library-startup.md` for regeneration and stale-asset checks.
 
+`LibraryFeatureTests` also pauses a remote refresh behind a controlled gate and
+proves that the already loaded bundled catalogue remains immediately playable.
+The watchdog is cleanup protection; the passing path does not depend on a delay.
+
 Settings coverage: `SettingsFeatureTests` verifies restoration, persistence and
 safe fallback from an obsolete stored theme. `ThemeManagerTests` verifies that
 the presentation palette reads and writes the Feature-owned selection rather
@@ -92,7 +96,10 @@ checks that waiting and death add no time and checkpoint retries/resizing preser
 from Verbos, plus the explicit unavailable state for a missing vocabulary. This is an
 estimate: homographs and verbs outside that teaching collection are not fully classified.
 `View model tests/GameViewModelTests.swift` covers the summary, retry and fresh-start
-presentation through isolated features; it requires the hosted iOS test target.
+presentation, changed-request replacement and observable next-level completion
+through isolated features; it requires the hosted iOS test target. SpriteKit reports
+gameplay events synchronously on the main actor, preserving their frame order rather
+than creating an independently scheduled task for each callback.
 
 Device checks: fall, see the friendly skeleton transition, inspect the six summary tiles,
 continue from checkpoint, finish a book and choose Next level, then die again. Also test

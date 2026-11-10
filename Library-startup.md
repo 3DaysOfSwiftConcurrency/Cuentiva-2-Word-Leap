@@ -95,8 +95,10 @@ Level geometry is still built when a book is played; the separate verb vocabular
 is unchanged. Manual pull-to-refresh still retrieves the editorial manuscript
 and updates the in-memory catalogue only after the complete manuscript validates.
 Incomplete books, duplicate IDs and orphan passage content are rejected, leaving
-the playable bundled catalogue intact. This does not add downloaded-file persistence
-or background catalogue updates.
+the playable bundled catalogue intact. A pending remote refresh does not block entry
+to a castle from that current catalogue. This does not add downloaded-file persistence
+or background catalogue updates. Remote manuscript input is capped at 5 MB and its
+required header fields are trimmed and validated before publication.
 
 ## Regeneration and validation
 
