@@ -36,6 +36,11 @@ final class GameViewModel {
     var platformProgress: String { "\(wordsRead) / \(activeWordCount) platforms" }
     var collectedDoubloonText: String { "\(collectedDoubloons)" }
     var collectedDoubloonAccessibilityLabel: String { "\(collectedDoubloons) doubloons collected" }
+    var completionDoubloonText: String { "\(collectedDoubloons) doubloons collected" }
+    var completionActionTitle: String { nextBook == nil ? "Adventure" : "Next level" }
+    var completedBookCover: CompletedBookCoverPresentation {
+        CompletedBookCoverPresentation(book: currentBook)
+    }
     var readingCardText: String {
         lastReadWord.isEmpty ? "Touch to jump. Hold left or right to steer." : lastReadWord
     }

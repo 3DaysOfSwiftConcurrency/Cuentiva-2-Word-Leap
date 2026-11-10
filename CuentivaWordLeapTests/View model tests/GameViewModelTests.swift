@@ -61,6 +61,8 @@ struct GameViewModelTests {
         #expect(model.platformProgress.contains("platforms"))
         #expect(model.collectedDoubloonText == "4")
         #expect(model.collectedDoubloonAccessibilityLabel == "4 doubloons collected")
+        #expect(model.completionDoubloonText == "4 doubloons collected")
+        #expect(model.completedBookCover.title == book.title)
         model.retry()
         #expect(!model.isDeathPresented)
         #expect(feature.runStatistics.doubloonsCollected == 4)

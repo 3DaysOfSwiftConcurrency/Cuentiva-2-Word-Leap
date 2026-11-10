@@ -12,7 +12,7 @@ struct CompletedBookPagesView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                CompletedBookCover(book: viewModel.book).frame(maxWidth: .infinity)
+                CompletedBookCover(presentation: viewModel.cover).frame(maxWidth: .infinity)
                 Text(viewModel.englishTitle)
                     .font(.system(.title2, design: .serif))
                     .frame(maxWidth: .infinity)

@@ -2,11 +2,13 @@ import Observation
 
 @MainActor @Observable
 final class CompletedBookPagesViewModel {
-    let book: StoryBook
+    let cover: CompletedBookCoverPresentation
     let pages: [CompletedBookPage]
+    let englishTitle: String
 
     init(book: StoryBook) {
-        self.book = book
+        cover = CompletedBookCoverPresentation(book: book)
+        englishTitle = book.englishTitle
         pages = book.spanishPassages.enumerated().map { index, spanish in
             let translation = book.englishPassages.indices.contains(index)
                 ? book.englishPassages[index] : ""
@@ -18,7 +20,6 @@ final class CompletedBookPagesViewModel {
         }
     }
 
-    var englishTitle: String { book.englishTitle }
 }
 
 struct CompletedBookPage: Identifiable, Equatable {

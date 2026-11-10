@@ -16,6 +16,7 @@ struct CompletedBookPagesViewModelTests {
         let viewModel = CompletedBookPagesViewModel(book: book)
 
         #expect(viewModel.englishTitle == "A Story")
+        #expect(viewModel.cover.title == "Un cuento")
         #expect(viewModel.pages.map(\.spanish) == ["Primera.", "Segunda.", "Tercera."])
         #expect(viewModel.pages.map(\.english) == ["First.", nil, "Third."])
     }

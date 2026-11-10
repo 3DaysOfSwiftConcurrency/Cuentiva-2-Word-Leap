@@ -68,8 +68,9 @@ struct GameView: View {
 
             if viewModel.isBookRevealed {
                 Color.black.opacity(0.32).ignoresSafeArea().allowsHitTesting(false)
-                BookCompletionReveal(book: viewModel.currentBook, title: viewModel.completionTitle,
-                    coins: viewModel.collectedDoubloons, hasNextLevel: viewModel.nextBook != nil,
+                BookCompletionReveal(cover: viewModel.completedBookCover, title: viewModel.completionTitle,
+                    doubloonText: viewModel.completionDoubloonText,
+                    primaryActionTitle: viewModel.completionActionTitle, hasNextLevel: viewModel.nextBook != nil,
                     read: { isReadingBook = true }, next: viewModel.startNextLevel, leave: leave)
                     .padding(.top, 70)
                     .transition(.opacity)
