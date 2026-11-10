@@ -106,8 +106,8 @@ final class WordLeapScene: SKScene {
                 .fadeOut(withDuration: 0.25)
             ]), .removeFromParent()]))
         }
-        let count = simulation.collectedCoins.count
-        Task { @MainActor in reportCoinCount(count) }
+        let collectedDoubloonCount = simulation.collectedCoins.count
+        Task { @MainActor in reportCoinCount(collectedDoubloonCount) }
     }
 
     private func addPlayer() {
@@ -197,11 +197,11 @@ final class WordLeapScene: SKScene {
             y: cameraNode.position.y + 110), duration: reduceMotion ? 0 : 0.7)
         rise.timingMode = .easeOut
         player.run(.group([rise, .scale(to: 1.6, duration: reduceMotion ? 0 : 0.7)]))
-        let coins = simulation.collectedCoins.count
-        let seconds = simulation.activeSeconds
+        let collectedDoubloons = simulation.collectedCoins.count
+        let activeSeconds = simulation.activeSeconds
         run(.sequence([.wait(forDuration: reduceMotion ? 0 : 0.8), .run { [weak self] in
             guard let self else { return }
-            Task { @MainActor in self.reportDeath(coins, seconds) }
+            Task { @MainActor in self.reportDeath(collectedDoubloons, activeSeconds) }
         }]), withKey: "deathReveal")
     }
 
@@ -258,9 +258,9 @@ final class WordLeapScene: SKScene {
         // The central book appears during the final part of the rescue.
         run(.sequence([.wait(forDuration: reduceMotion ? 0.4 : 1.1), .run { [weak self] in
             guard let self else { return }
-            let coins = self.simulation.collectedCoins.count
-            let seconds = self.simulation.activeSeconds
-            Task { @MainActor in self.reportRescue(coins, seconds) }
+            let collectedDoubloons = self.simulation.collectedCoins.count
+            let activeSeconds = self.simulation.activeSeconds
+            Task { @MainActor in self.reportRescue(collectedDoubloons, activeSeconds) }
         }]))
     }
 

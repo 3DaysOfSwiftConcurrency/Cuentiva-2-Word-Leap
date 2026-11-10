@@ -108,8 +108,8 @@ final class LibraryFeature {
         return task
     }
 
-    func bankDoubloons(_ amount: Int) async {
-        let savedBalance = await levelProgressStore.addDoubloons(amount)
+    func bankDoubloons(_ earnedDoubloons: Int) async {
+        let savedBalance = await levelProgressStore.addDoubloons(earnedDoubloons)
         // Treasure only increases; a late read must not overwrite a newer credit.
         doubloonBalance = max(doubloonBalance, savedBalance)
     }

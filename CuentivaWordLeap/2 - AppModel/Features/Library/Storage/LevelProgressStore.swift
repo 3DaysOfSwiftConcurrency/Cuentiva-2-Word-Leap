@@ -25,10 +25,10 @@ actor LevelProgressStore {
     }
 
     /// Read and increment within one actor turn; never replace with a caller's snapshot.
-    func addDoubloons(_ amount: Int) -> Int {
+    func addDoubloons(_ earnedDoubloons: Int) -> Int {
         let balance = doubloonBalance()
-        guard amount > 0 else { return balance }
-        let updated = balance + min(amount, Int.max - balance)
+        guard earnedDoubloons > 0 else { return balance }
+        let updated = balance + min(earnedDoubloons, Int.max - balance)
         defaults.set(updated, forKey: doubloonBalanceKey)
         return updated
     }

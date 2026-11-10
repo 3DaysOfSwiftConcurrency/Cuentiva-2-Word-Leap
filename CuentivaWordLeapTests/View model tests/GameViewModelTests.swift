@@ -53,7 +53,7 @@ struct GameViewModelTests {
         let model = GameViewModel(book: book, wordLeapFeature: feature, libraryFeature: library)
         await model.prepare(book, reduceMotion: true).value
         model.recordLanding(at: 0, word: "Pipa")
-        model.showDeath(coins: 4, seconds: 125)
+        model.showDeath(collectedDoubloons: 4, activeSeconds: 125)
         #expect(model.isDeathPresented)
         #expect(model.gameOverStatistics.first { $0.title == "Time played" }?.value == "2:05")
         #expect(model.gameOverStatistics.first { $0.title == "Words collected" }?.value == "1")

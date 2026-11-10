@@ -11,6 +11,7 @@ final class GameViewModel {
     @ObservationIgnored private var preparationTask: Task<Void, Never>?
     private var preparationRequest: GamePreparationRequest?
     private var preparationRevision = 0
+    private var activeSceneID: UUID?
     private(set) var scene: WordLeapScene?
     private(set) var isBookRevealed = false
     private(set) var collectedDoubloons = 0
@@ -90,6 +91,7 @@ final class GameViewModel {
         preparationRequest = request
         scene?.removeAllActions()
         scene = nil
+        activeSceneID = nil
         lastReadWord = ""
         isDeathPresented = false
         isBookRevealed = false
@@ -105,12 +107,26 @@ final class GameViewModel {
             guard !Task.isCancelled, preparationRevision == revision,
                   preparationError == nil, let level = activeLevel,
                   level.book.id == book.id else { return }
+            let sceneID = UUID()
+            activeSceneID = sceneID
             scene = WordLeapScene(size: CGSize(width: 390, height: 740), levelPlan: level,
                 reduceMotion: reduceMotion,
-                reportCoinCount: { [weak self] count in self?.recordCollectedDoubloons(count) },
-                reportRescue: { [weak self] coins, seconds in self?.showCompletedBook(coins: coins, seconds: seconds) },
-                reportDeath: { [weak self] coins, seconds in self?.showDeath(coins: coins, seconds: seconds) },
-                reportLanding: { [weak self] index, word in self?.recordLanding(at: index, word: word) })
+                reportCoinCount: { [weak self] collectedDoubloonCount in
+                    guard let self, activeSceneID == sceneID else { return }
+                    recordCollectedDoubloons(collectedDoubloonCount)
+                },
+                reportRescue: { [weak self] collectedDoubloons, activeSeconds in
+                    guard let self, activeSceneID == sceneID else { return }
+                    showCompletedBook(collectedDoubloons: collectedDoubloons, activeSeconds: activeSeconds)
+                },
+                reportDeath: { [weak self] collectedDoubloons, activeSeconds in
+                    guard let self, activeSceneID == sceneID else { return }
+                    showDeath(collectedDoubloons: collectedDoubloons, activeSeconds: activeSeconds)
+                },
+                reportLanding: { [weak self] wordIndex, word in
+                    guard let self, activeSceneID == sceneID else { return }
+                    recordLanding(at: wordIndex, word: word)
+                })
         }
         preparationTask = task
         return task
@@ -126,20 +142,20 @@ final class GameViewModel {
         lastReadWord = word
     }
 
-    func showDeath(coins: Int, seconds: TimeInterval) {
-        wordLeapFeature.recordRunProgress(doubloons: coins, activeSeconds: seconds)
-        collectedDoubloons = coins
+    func showDeath(collectedDoubloons: Int, activeSeconds: TimeInterval) {
+        wordLeapFeature.recordRunProgress(doubloons: collectedDoubloons, activeSeconds: activeSeconds)
+        self.collectedDoubloons = collectedDoubloons
         isDeathPresented = true
     }
 
-    private func recordCollectedDoubloons(_ count: Int) {
-        collectedDoubloons = count
-        wordLeapFeature.recordCollectedDoubloons(count)
+    private func recordCollectedDoubloons(_ reportedDoubloonCount: Int) {
+        collectedDoubloons = reportedDoubloonCount
+        wordLeapFeature.recordCollectedDoubloons(reportedDoubloonCount)
     }
 
-    private func showCompletedBook(coins: Int, seconds: TimeInterval) {
-        wordLeapFeature.recordRunProgress(doubloons: coins, activeSeconds: seconds)
-        collectedDoubloons = coins
+    private func showCompletedBook(collectedDoubloons: Int, activeSeconds: TimeInterval) {
+        wordLeapFeature.recordRunProgress(doubloons: collectedDoubloons, activeSeconds: activeSeconds)
+        self.collectedDoubloons = collectedDoubloons
         isBookRevealed = true
     }
     func dismissDeath() { isDeathPresented = false }
@@ -157,6 +173,7 @@ final class GameViewModel {
         preparationRequest = nil
         scene?.removeAllActions()
         scene = nil
+        activeSceneID = nil
         wordLeapFeature.endLevel()
     }
 }
