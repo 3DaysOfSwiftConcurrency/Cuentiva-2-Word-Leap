@@ -18,6 +18,8 @@ final class WordLeapFeature {
     @ObservationIgnored private var doubloonSaveTask: Task<Void, Never>?
     private var preparationRequest: PreparationRequest?
     private var preparationRevision = 0
+    private var completionRevision = 0
+    private var doubloonSaveRevision = 0
     private var creditedLevelDoubloons = 0
 
     init(levelPlanBuilder: LevelPlanBuilder, libraryFeature: LibraryFeature) {
@@ -72,9 +74,17 @@ final class WordLeapFeature {
         isLevelComplete = landedWordCount == activeLevel.words.count
         if isLevelComplete {
             let bookID = activeLevel.book.id
-            completionTask = Task { [libraryFeature] in
+            completionRevision += 1
+            let revision = completionRevision
+            let task = Task { [libraryFeature] in
+                defer {
+                    if self.completionRevision == revision {
+                        self.completionTask = nil
+                    }
+                }
                 await libraryFeature.recordCompletion(of: bookID)
             }
+            completionTask = task
         }
     }
 
@@ -93,8 +103,16 @@ final class WordLeapFeature {
         let earnedDoubloons = collectedDoubloons - creditedLevelDoubloons
         guard earnedDoubloons > 0 else { return doubloonSaveTask }
         creditedLevelDoubloons = collectedDoubloons
-        let task = Task { [libraryFeature, doubloonSaveTask] in
-            await doubloonSaveTask?.value
+        doubloonSaveRevision += 1
+        let revision = doubloonSaveRevision
+        let predecessor = doubloonSaveTask
+        let task = Task { [libraryFeature] in
+            defer {
+                if self.doubloonSaveRevision == revision {
+                    self.doubloonSaveTask = nil
+                }
+            }
+            await predecessor?.value
             await libraryFeature.bankDoubloons(earnedDoubloons)
         }
         // Durable credits continue if the player leaves or begins another level.
