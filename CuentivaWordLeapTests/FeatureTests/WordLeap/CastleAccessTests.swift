@@ -10,12 +10,12 @@ struct CastleAccessTests {
         let second = try #require(fixture.library.books.first { $0.id == "two" })
         await fixture.game.start(book: second).value
         #expect(fixture.game.activeLevel == nil)
-        #expect(fixture.game.preparationFailure as? CastleAccessError == .locked(previousCastle: 1))
+        #expect(fixture.game.preparationFailure == .locked(previousCastle: 1))
         #expect(fixture.game.runStatistics.wordsCollected == 0)
         let unknown = StoryBook(id: "unknown", storyteller: "Pipa", title: "", englishTitle: "", spanishPassages: ["X"])
         await fixture.game.start(book: unknown).value
         #expect(fixture.game.activeLevel == nil)
-        #expect(fixture.game.preparationFailure as? CastleAccessError == .unknownBook)
+        #expect(fixture.game.preparationFailure == .unknownBook)
         #expect(await fixture.progress.completedBookIDs().isEmpty)
     }
 
@@ -30,7 +30,7 @@ struct CastleAccessTests {
         fixture.game.recordRunProgress(doubloons: 2, activeSeconds: 12)
         await fixture.game.start(book: second, continuingRun: true).value
         #expect(fixture.game.activeLevel?.book.id == "one")
-        #expect(fixture.game.preparationFailure as? CastleAccessError == .locked(previousCastle: 1))
+        #expect(fixture.game.preparationFailure == .locked(previousCastle: 1))
         #expect(fixture.game.runStatistics.doubloonsCollected == 2)
         #expect(!fixture.library.canPlay(second))
         let plan = try #require(fixture.game.activeLevel)

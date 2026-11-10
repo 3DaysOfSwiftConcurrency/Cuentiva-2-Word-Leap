@@ -30,7 +30,18 @@ final class GameViewModel {
 
     var activeLevel: LevelPlan? { wordLeapFeature.activeLevel }
     var currentBook: StoryBook { activeLevel?.book ?? selectedBook }
-    var preparationError: String? { wordLeapFeature.preparationFailure?.localizedDescription }
+    var preparationError: String? {
+        switch wordLeapFeature.preparationFailure {
+        case .libraryUnavailable:
+            "The adventure could not be loaded. Return to the map and try again."
+        case .unknownBook:
+            "This book is no longer on the adventure map."
+        case .locked(let previousCastle):
+            "Complete Castle \(previousCastle) to unlock this adventure."
+        case nil:
+            nil
+        }
+    }
     var wordsRead: Int { wordLeapFeature.landedWordCount }
     var activeWordCount: Int { activeLevel?.words.count ?? currentBook.platformCount }
     var loadingCharacterAssetName: String { currentBook.characterProfile?.spriteAssetName ?? "WordLeapMora" }

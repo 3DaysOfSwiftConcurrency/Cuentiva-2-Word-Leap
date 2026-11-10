@@ -43,6 +43,30 @@ struct GameViewModelTests {
         model.leaveLevel()
     }
 
+    @Test func removedBookShowsPresentationCopyWithoutCreatingAScene() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        await fixture.library.load().value
+        let removedBook = StoryBook(
+            id: "removed",
+            storyteller: "Pipa",
+            title: "Removed",
+            englishTitle: "Removed",
+            spanishPassages: ["Pipa salta."]
+        )
+        let model = GameViewModel(
+            book: removedBook,
+            wordLeapFeature: fixture.game,
+            libraryFeature: fixture.library
+        )
+
+        await model.prepare(removedBook).value
+
+        #expect(model.scene == nil)
+        #expect(model.preparationError == "This book is no longer on the adventure map.")
+        model.leaveLevel()
+    }
+
     @Test func deathPresentsStatsAndCheckpointRetryKeepsThem() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }

@@ -8,7 +8,7 @@ final class WordLeapFeature {
     private let levelPlanBuilder: LevelPlanBuilder
     private let libraryFeature: LibraryFeature
     private(set) var activeLevel: LevelPlan?
-    private(set) var preparationFailure: (any Error)?
+    private(set) var preparationFailure: CastleAccessError?
     private(set) var landedWordCount = 0
     private(set) var isLevelComplete = false
     private(set) var runStatistics = AdventureRunStatistics()
@@ -53,9 +53,12 @@ final class WordLeapFeature {
                 self.creditedLevelDoubloons = 0
                 self.landedWordCount = 0
                 self.isLevelComplete = false
+            } catch let accessError as CastleAccessError {
+                guard !Task.isCancelled, self.preparationRevision == revision else { return }
+                self.preparationFailure = accessError
             } catch {
                 guard !Task.isCancelled, self.preparationRevision == revision else { return }
-                self.preparationFailure = error
+                self.preparationFailure = .libraryUnavailable
             }
         }
         preparationTask = task
