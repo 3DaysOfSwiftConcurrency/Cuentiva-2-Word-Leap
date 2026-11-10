@@ -71,7 +71,9 @@ struct GameView: View {
                 BookCompletionReveal(cover: viewModel.completedBookCover, title: viewModel.completionTitle,
                     doubloonText: viewModel.completionDoubloonText,
                     primaryActionTitle: viewModel.completionActionTitle, hasNextLevel: viewModel.nextBook != nil,
-                    read: { isReadingBook = true }, next: viewModel.startNextLevel, leave: leave)
+                    read: { isReadingBook = true },
+                    next: { _ = viewModel.startNextLevel() },
+                    leave: leave)
                     .padding(.top, 70)
                     .transition(.opacity)
             } else if viewModel.isLevelComplete {

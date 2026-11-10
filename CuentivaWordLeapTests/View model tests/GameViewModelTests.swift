@@ -97,4 +97,29 @@ struct GameViewModelTests {
         #expect(model.scene == nil)
         #expect(feature.activeLevel == nil)
     }
+
+    @Test func nextLevelReturnsItsPreparationAndContinuesTheAdventure() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        await fixture.library.load().value
+        let firstBook = try #require(fixture.library.books.first)
+        let viewModel = GameViewModel(
+            book: firstBook,
+            wordLeapFeature: fixture.game,
+            libraryFeature: fixture.library
+        )
+        await viewModel.prepare().value
+        let firstPlan = try #require(viewModel.activeLevel)
+        for wordIndex in firstPlan.words.indices {
+            viewModel.recordLanding(at: wordIndex, word: firstPlan.words[wordIndex])
+        }
+
+        let nextLevelPreparation = try #require(viewModel.startNextLevel())
+        await nextLevelPreparation.value
+
+        #expect(viewModel.currentBook.id == "two")
+        #expect(viewModel.scene != nil)
+        #expect(fixture.game.runStatistics.levelsCompleted == 1)
+        viewModel.leaveLevel()
+    }
 }

@@ -145,9 +145,10 @@ final class GameViewModel {
         return task
     }
 
-    func startNextLevel() {
-        guard let nextBook else { return }
-        _ = prepare(nextBook, reduceMotion: reduceMotion, continuingRun: true)
+    @discardableResult
+    func startNextLevel() -> Task<Void, Never>? {
+        guard let nextBook else { return nil }
+        return prepare(nextBook, reduceMotion: reduceMotion, continuingRun: true)
     }
 
     func recordLanding(at wordIndex: Int, word: String) {
