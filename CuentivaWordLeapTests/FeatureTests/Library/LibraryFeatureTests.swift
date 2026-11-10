@@ -4,6 +4,39 @@ import Testing
 
 @MainActor
 struct LibraryFeatureTests {
+    @Test func remoteRefreshDoesNotBlockPlayFromTheBundledCatalogue() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        let gate = RemoteManuscriptGate()
+        let remoteManuscript = Data("@one|Pipa|Uno remoto|Remote One|A1\nHola.|Hello.\n".utf8)
+        let repository = CuentivaBookRepository(
+            networkingManager: NetworkingManager { _ in await gate.request() },
+            bundledLibraryURL: fixture.directory.appendingPathComponent("Library.dat")
+        )
+        let library = LibraryFeature(bookRepository: repository, levelProgressStore: fixture.progress)
+        await library.load().value
+
+        let refresh = library.refresh()
+        await gate.waitUntilRequested()
+        let watchdog = Task {
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            gate.release(with: remoteManuscript)
+        }
+        defer {
+            watchdog.cancel()
+            gate.release(with: remoteManuscript)
+        }
+
+        let playableBook = try await library.bookForPlay(id: "one")
+        let refreshHadToBeReleased = gate.hasReleasedResponse
+        #expect(playableBook.title == "Uno")
+        #expect(!refreshHadToBeReleased)
+
+        gate.release(with: remoteManuscript)
+        await refresh.value
+    }
+
     @Test func remoteRefreshQueuedDuringBundledLoadStillRuns() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
@@ -122,5 +155,39 @@ struct LibraryFeatureTests {
         await fixture.progress.recordCompletion(of: "one")
         let second = try await fixture.library.bookForPlay(id: "two")
         #expect(second.title == "Dos")
+    }
+}
+
+@MainActor
+private final class RemoteManuscriptGate {
+    private var requestStarted = false
+    private var startedWaiters: [CheckedContinuation<Void, Never>] = []
+    private var responseContinuation: CheckedContinuation<Data, Never>?
+    private var releasedData: Data?
+    private(set) var hasReleasedResponse = false
+
+    func request() async -> Data {
+        requestStarted = true
+        let waiters = startedWaiters
+        startedWaiters.removeAll()
+        for waiter in waiters { waiter.resume() }
+        if let releasedData { return releasedData }
+        return await withCheckedContinuation { responseContinuation = $0 }
+    }
+
+    func waitUntilRequested() async {
+        guard !requestStarted else { return }
+        await withCheckedContinuation { startedWaiters.append($0) }
+    }
+
+    func release(with data: Data) {
+        guard !hasReleasedResponse else { return }
+        hasReleasedResponse = true
+        if let responseContinuation {
+            self.responseContinuation = nil
+            responseContinuation.resume(returning: data)
+        } else {
+            releasedData = data
+        }
     }
 }

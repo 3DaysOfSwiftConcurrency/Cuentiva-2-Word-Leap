@@ -39,7 +39,6 @@ final class LibraryFeature {
     /// Every gameplay entry point uses the same policy and the canonical catalogue book.
     func bookForPlay(id: String) async throws -> StoryBook {
         if books.isEmpty { await load().value }
-        if let loadingTask { await loadingTask.value }
         guard !books.isEmpty else { throw CastleAccessError.libraryUnavailable }
         await refreshProgress().value
         guard let castle = castles.first(where: { $0.id == id }) else {
