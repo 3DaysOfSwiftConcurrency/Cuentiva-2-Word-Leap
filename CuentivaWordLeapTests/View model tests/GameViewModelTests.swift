@@ -39,7 +39,7 @@ struct GameViewModelTests {
         )
         await model.prepare(second).value
         #expect(model.scene == nil)
-        #expect(model.preparationError?.contains("Castle 1") == true)
+        #expect(model.preparationError == "Complete Castle 1 to unlock this adventure.")
         model.leaveLevel()
     }
 

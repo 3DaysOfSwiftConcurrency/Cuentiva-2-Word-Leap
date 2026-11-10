@@ -21,7 +21,7 @@ struct LibraryFeatureTests {
         await remoteRefresh.value
 
         #expect(library.books.map(\.title) == ["Uno remoto"])
-        #expect(library.loadError == nil)
+        #expect(library.requestFailure == nil)
         #expect(!library.isLoading)
     }
 
@@ -104,7 +104,10 @@ struct LibraryFeatureTests {
             networkingManager: NetworkingManager(), bundledLibraryURL: nil), levelProgressStore: fixture.progress)
         await #expect(throws: CastleAccessError.self) { try await unavailable.bookForPlay(id: "one") }
         #expect(unavailable.castles.isEmpty)
-        #expect(unavailable.loadError != nil)
+        guard case .bundledLibrary? = unavailable.requestFailure else {
+            Issue.record("Expected the bundled-library failure to remain available to presentation.")
+            return
+        }
         await #expect(throws: CastleAccessError.self) { try await fixture.library.bookForPlay(id: "unknown") }
         await fixture.library.recordCompletion(of: "unknown")
         #expect(fixture.library.completedBookIDs.isEmpty)

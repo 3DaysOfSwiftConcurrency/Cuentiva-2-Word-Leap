@@ -10,7 +10,7 @@ struct AdventureCastle: Identifiable, Sendable {
     var id: String { book.id }
 }
 
-enum CastleAccessError: LocalizedError {
+enum CastleAccessError: LocalizedError, Equatable {
     case libraryUnavailable
     case unknownBook
     case locked(previousCastle: Int)

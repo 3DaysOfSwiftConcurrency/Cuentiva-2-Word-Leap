@@ -1,3 +1,4 @@
+import Foundation
 import Observation
 
 @MainActor @Observable
@@ -7,7 +8,7 @@ final class LibraryFeature {
     private(set) var books: [StoryBook] = []
     private(set) var completedBookIDs: Set<String> = []
     private(set) var doubloonBalance = 0
-    private(set) var loadError: String?
+    private(set) var requestFailure: LibraryRequestFailure?
     private(set) var isLoading = false
     private(set) var isReady = false
     @ObservationIgnored private var loadingTask: Task<Void, Never>?
@@ -140,10 +141,10 @@ final class LibraryFeature {
             books = snapshot.0
             completedBookIDs.formUnion(snapshot.1)
             doubloonBalance = max(doubloonBalance, snapshot.2)
-            loadError = nil
+            requestFailure = nil
             isReady = true
         }
-        catch { loadError = "The Cuentiva book collection could not be opened." }
+        catch { requestFailure = .bundledLibrary(error) }
     }
 
     private func refreshBooks(
@@ -154,13 +155,18 @@ final class LibraryFeature {
         do {
             books = try await repository.refreshFromGitHub()
             completedBookIDs.formUnion(await levelProgressStore.completedBookIDs())
-            loadError = nil
+            requestFailure = nil
         }
-        catch { loadError = "GitHub could not refresh the collection. Your bundled books are still ready to play." }
+        catch { requestFailure = .remoteRefresh(error) }
     }
 }
 
 private enum LibraryLoadingOperation: Equatable {
     case bundled
     case remote
+}
+
+enum LibraryRequestFailure: Error {
+    case bundledLibrary(any Error)
+    case remoteRefresh(any Error)
 }

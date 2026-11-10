@@ -29,7 +29,7 @@ final class GameViewModel {
 
     var activeLevel: LevelPlan? { wordLeapFeature.activeLevel }
     var currentBook: StoryBook { activeLevel?.book ?? selectedBook }
-    var preparationError: String? { wordLeapFeature.preparationError }
+    var preparationError: String? { wordLeapFeature.preparationFailure?.localizedDescription }
     var wordsRead: Int { wordLeapFeature.landedWordCount }
     var activeWordCount: Int { activeLevel?.words.count ?? currentBook.platformCount }
     var loadingCharacterAssetName: String { currentBook.characterProfile?.spriteAssetName ?? "WordLeapMora" }

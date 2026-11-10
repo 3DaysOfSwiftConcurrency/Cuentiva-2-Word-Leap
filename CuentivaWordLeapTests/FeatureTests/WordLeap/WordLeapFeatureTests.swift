@@ -17,7 +17,7 @@ struct WordLeapFeatureTests {
         await secondPreparation.value
 
         #expect(fixture.game.activeLevel?.book.id == secondBook.id)
-        #expect(fixture.game.preparationError == nil)
+        #expect(fixture.game.preparationFailure == nil)
     }
 
     @Test func completingTheFinalWordCompletesTheLevel() async throws {

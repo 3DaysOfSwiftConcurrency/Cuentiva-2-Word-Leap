@@ -19,7 +19,16 @@ final class LibraryViewModel {
     var doubloonAccessibilityLabel: String { "\(doubloonBalance) doubloons" }
     var castleCountText: String { "\(books.count) castles" }
     var conqueredCountText: String { "\(conqueredCount) conquered" }
-    var errorMessage: String? { libraryFeature.loadError }
+    var errorMessage: String? {
+        switch libraryFeature.requestFailure {
+        case .bundledLibrary:
+            "The Cuentiva book collection could not be opened."
+        case .remoteRefresh:
+            "GitHub could not refresh the collection. Your bundled books are still ready to play."
+        case nil:
+            nil
+        }
+    }
     var isLoading: Bool { libraryFeature.isLoading }
     var isReady: Bool { libraryFeature.isReady }
 

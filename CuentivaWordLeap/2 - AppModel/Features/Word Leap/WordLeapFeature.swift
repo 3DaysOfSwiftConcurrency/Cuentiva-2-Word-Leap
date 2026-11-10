@@ -8,7 +8,7 @@ final class WordLeapFeature {
     private let levelPlanBuilder: LevelPlanBuilder
     private let libraryFeature: LibraryFeature
     private(set) var activeLevel: LevelPlan?
-    private(set) var preparationError: String?
+    private(set) var preparationFailure: (any Error)?
     private(set) var landedWordCount = 0
     private(set) var isLevelComplete = false
     private(set) var runStatistics = AdventureRunStatistics()
@@ -32,7 +32,7 @@ final class WordLeapFeature {
         preparationRevision += 1
         let revision = preparationRevision
         preparationRequest = request
-        preparationError = nil
+        preparationFailure = nil
         let task = Task { [levelPlanBuilder, libraryFeature, completionTask] in
             defer {
                 if self.preparationRevision == revision {
@@ -55,7 +55,7 @@ final class WordLeapFeature {
                 self.isLevelComplete = false
             } catch {
                 guard !Task.isCancelled, self.preparationRevision == revision else { return }
-                self.preparationError = error.localizedDescription
+                self.preparationFailure = error
             }
         }
         preparationTask = task

@@ -44,7 +44,7 @@ struct LibraryViewModelTests {
         await model.load().value
         #expect(!model.isReady)
         #expect(model.books.isEmpty)
-        #expect(model.errorMessage != nil)
+        #expect(model.errorMessage == "The Cuentiva book collection could not be opened.")
         #expect(!model.isLoading)
 
         try validData.write(to: url)
