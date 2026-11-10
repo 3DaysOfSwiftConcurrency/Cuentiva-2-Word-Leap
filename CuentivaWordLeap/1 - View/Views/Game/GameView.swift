@@ -137,8 +137,8 @@ private struct GameHUD: View {
             Button(action: leave) {
                 Image(systemName: "xmark")
                     .font(.headline.weight(.bold))
-                    .frame(width: 44, height: 44)
-                    .worldPanel(cornerRadius: 22)
+                    .frame(width: 48, height: 48)
+                    .worldPanel(cornerRadius: 24)
             }
             .foregroundStyle(themeManager.worldAccent)
             .accessibilityLabel("Leave adventure")
