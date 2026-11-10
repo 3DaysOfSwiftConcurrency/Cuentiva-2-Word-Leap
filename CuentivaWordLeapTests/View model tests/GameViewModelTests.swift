@@ -11,20 +11,20 @@ struct GameViewModelTests {
         await fixture.library.recordCompletion(of: "one")
         let firstBook = try #require(fixture.library.books.first { $0.id == "one" })
         let secondBook = try #require(fixture.library.books.first { $0.id == "two" })
-        let model = GameViewModel(
+        let viewModel = GameViewModel(
             book: firstBook,
             wordLeapFeature: fixture.game,
             libraryFeature: fixture.library
         )
 
-        let firstPreparation = model.prepare(firstBook)
-        let secondPreparation = model.prepare(secondBook)
+        let firstPreparation = viewModel.prepare(firstBook)
+        let secondPreparation = viewModel.prepare(secondBook)
         await firstPreparation.value
         await secondPreparation.value
 
-        #expect(model.activeLevel?.book.id == secondBook.id)
-        #expect(model.scene != nil)
-        model.leaveLevel()
+        #expect(viewModel.activeLevel?.book.id == secondBook.id)
+        #expect(viewModel.scene != nil)
+        viewModel.leaveLevel()
     }
 
     @Test func lockedCastleShowsAnErrorWithoutCreatingAScene() async throws {
@@ -32,15 +32,15 @@ struct GameViewModelTests {
         defer { try? fixture.cleanUp() }
         await fixture.library.load().value
         let second = try #require(fixture.library.books.first { $0.id == "two" })
-        let model = GameViewModel(
+        let viewModel = GameViewModel(
             book: second,
             wordLeapFeature: fixture.game,
             libraryFeature: fixture.library
         )
-        await model.prepare(second).value
-        #expect(model.scene == nil)
-        #expect(model.preparationError == "Complete Castle 1 to unlock this adventure.")
-        model.leaveLevel()
+        await viewModel.prepare(second).value
+        #expect(viewModel.scene == nil)
+        #expect(viewModel.preparationError == "Complete Castle 1 to unlock this adventure.")
+        viewModel.leaveLevel()
     }
 
     @Test func removedBookShowsPresentationCopyWithoutCreatingAScene() async throws {
@@ -54,17 +54,17 @@ struct GameViewModelTests {
             englishTitle: "Removed",
             spanishPassages: ["Pipa salta."]
         )
-        let model = GameViewModel(
+        let viewModel = GameViewModel(
             book: removedBook,
             wordLeapFeature: fixture.game,
             libraryFeature: fixture.library
         )
 
-        await model.prepare(removedBook).value
+        await viewModel.prepare(removedBook).value
 
-        #expect(model.scene == nil)
-        #expect(model.preparationError == "This book is no longer on the adventure map.")
-        model.leaveLevel()
+        #expect(viewModel.scene == nil)
+        #expect(viewModel.preparationError == "This book is no longer on the adventure map.")
+        viewModel.leaveLevel()
     }
 
     @Test func deathPresentsStatsAndCheckpointRetryKeepsThem() async throws {
@@ -74,27 +74,27 @@ struct GameViewModelTests {
         let library = fixture.library
         await library.load().value
         let book = try #require(library.books.first)
-        let model = GameViewModel(book: book, wordLeapFeature: feature, libraryFeature: library)
-        await model.prepare(book, reduceMotion: true).value
-        model.recordLanding(at: 0, word: "Pipa")
-        model.showDeath(collectedDoubloons: 4, activeSeconds: 125)
-        #expect(model.isDeathPresented)
-        #expect(model.gameOverStatistics.first { $0.title == "Time played" }?.displayValue == "2:05")
-        #expect(model.gameOverStatistics.first { $0.title == "Words collected" }?.displayValue == "1")
-        #expect(model.collectedDoubloons == 4)
-        #expect(model.platformProgress.contains("platforms"))
-        #expect(model.collectedDoubloonText == "4")
-        #expect(model.collectedDoubloonAccessibilityLabel == "4 doubloons collected")
-        #expect(model.completionDoubloonText == "4 doubloons collected")
-        #expect(model.completedBookCover.title == book.title)
-        model.retry()
-        #expect(!model.isDeathPresented)
+        let viewModel = GameViewModel(book: book, wordLeapFeature: feature, libraryFeature: library)
+        await viewModel.prepare(book, reduceMotion: true).value
+        viewModel.recordLanding(at: 0, word: "Pipa")
+        viewModel.showDeath(collectedDoubloons: 4, activeSeconds: 125)
+        #expect(viewModel.isDeathPresented)
+        #expect(viewModel.gameOverStatistics.first { $0.title == "Time played" }?.displayValue == "2:05")
+        #expect(viewModel.gameOverStatistics.first { $0.title == "Words collected" }?.displayValue == "1")
+        #expect(viewModel.collectedDoubloons == 4)
+        #expect(viewModel.platformProgress.contains("platforms"))
+        #expect(viewModel.collectedDoubloonText == "4")
+        #expect(viewModel.collectedDoubloonAccessibilityLabel == "4 doubloons collected")
+        #expect(viewModel.completionDoubloonText == "4 doubloons collected")
+        #expect(viewModel.completedBookCover.title == book.title)
+        viewModel.retry()
+        #expect(!viewModel.isDeathPresented)
         #expect(feature.runStatistics.doubloonsCollected == 4)
-        await model.prepare(book).value
+        await viewModel.prepare(book).value
         #expect(feature.runStatistics.wordsCollected == 0)
         #expect(feature.runStatistics.activeSeconds == 0)
-        model.leaveLevel()
-        #expect(model.scene == nil)
+        viewModel.leaveLevel()
+        #expect(viewModel.scene == nil)
         #expect(feature.activeLevel == nil)
     }
 
