@@ -153,8 +153,10 @@ final class LibraryFeature {
     ) async {
         await refreshDoubloonBalance()
         do {
-            books = try await repository.refreshFromGitHub()
-            completedBookIDs.formUnion(await levelProgressStore.completedBookIDs())
+            let refreshedBooks = try await repository.refreshFromGitHub()
+            let savedCompletedBookIDs = await levelProgressStore.completedBookIDs()
+            books = refreshedBooks
+            completedBookIDs.formUnion(savedCompletedBookIDs)
             requestFailure = nil
         }
         catch { requestFailure = .remoteRefresh(error) }
