@@ -82,7 +82,8 @@ final class LibraryFeature {
 
     func refresh() -> Task<Void, Never> {
         if loadingOperation == .remote, let loadingTask { return loadingTask }
-        return beginLoading(.remote, after: loadingTask)
+        let bundledLoad = books.isEmpty ? load() : loadingTask
+        return beginLoading(.remote, after: bundledLoad)
     }
 
     private func beginLoading(

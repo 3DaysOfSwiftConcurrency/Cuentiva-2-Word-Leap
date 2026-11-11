@@ -58,6 +58,26 @@ struct LibraryFeatureTests {
         #expect(!libraryFeature.isLoading)
     }
 
+    @Test func remoteRefreshOnAFreshFeatureEstablishesAReadyBundledBaseline() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        let remoteManuscript = Data("@one|Pipa|Uno remoto|Remote One|A1\nHola.|Hello.\n".utf8)
+        let bookRepository = CuentivaBookRepository(
+            networkingManager: NetworkingManager { _ in remoteManuscript },
+            bundledLibraryURL: fixture.directory.appendingPathComponent("Library.dat")
+        )
+        let libraryFeature = LibraryFeature(
+            bookRepository: bookRepository,
+            levelProgressStore: fixture.levelProgressStore
+        )
+
+        await libraryFeature.refresh().value
+
+        #expect(libraryFeature.isReady)
+        #expect(libraryFeature.books.map(\.title) == ["Uno remoto"])
+        #expect(libraryFeature.requestFailure == nil)
+    }
+
     @Test func allBundledCastlesUnlockInNumberedOrder() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
