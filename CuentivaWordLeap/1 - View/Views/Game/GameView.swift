@@ -94,7 +94,7 @@ struct GameView: View {
         .onChange(of: scenePhase) { _, _ in viewModel.scenePhaseDidChange() }
         .toolbar(.hidden, for: .navigationBar)
         .task {
-            await viewModel.prepare(reduceMotion: reduceMotion).value
+            await viewModel.prepareAdventure(reduceMotion: reduceMotion).value
         }
         .onDisappear { viewModel.leaveLevel() }
         .toolbar(.hidden, for: .tabBar)

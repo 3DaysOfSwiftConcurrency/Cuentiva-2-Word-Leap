@@ -100,7 +100,7 @@ struct LibraryViewModelTests {
         #expect(viewModel.doubloonBalance == 1)
         #expect(viewModel.doubloonAccessibilityLabel == "1 doubloon")
         let first = try #require(viewModel.books.first)
-        await fixture.wordLeapFeature.start(book: first).value
+        await fixture.wordLeapFeature.startAdventure(with: first).value
         await fixture.wordLeapFeature.recordCollectedDoubloons(2)?.value
         #expect(viewModel.doubloonBalance == 3)
         #expect(viewModel.doubloonAccessibilityLabel == "3 doubloons")

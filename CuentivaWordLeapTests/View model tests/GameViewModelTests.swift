@@ -17,8 +17,8 @@ struct GameViewModelTests {
             libraryFeature: fixture.libraryFeature
         )
 
-        let firstPreparation = viewModel.prepare(firstBook)
-        let secondPreparation = viewModel.prepare(secondBook)
+        let firstPreparation = viewModel.prepareAdventure(with: firstBook)
+        let secondPreparation = viewModel.prepareAdventure(with: secondBook)
         await firstPreparation.value
         await secondPreparation.value
 
@@ -37,7 +37,7 @@ struct GameViewModelTests {
             wordLeapFeature: fixture.wordLeapFeature,
             libraryFeature: fixture.libraryFeature
         )
-        await viewModel.prepare(second).value
+        await viewModel.prepareAdventure(with: second).value
         #expect(viewModel.scene == nil)
         #expect(viewModel.preparationError == "Complete Castle 1 to unlock this adventure.")
         viewModel.leaveLevel()
@@ -61,7 +61,7 @@ struct GameViewModelTests {
         )
         #expect(viewModel.platformProgress == "0 / 1 platform")
 
-        await viewModel.prepare(removedBook).value
+        await viewModel.prepareAdventure(with: removedBook).value
 
         #expect(viewModel.scene == nil)
         #expect(viewModel.preparationError == "This book is no longer on the adventure map.")
@@ -80,7 +80,7 @@ struct GameViewModelTests {
             wordLeapFeature: wordLeapFeature,
             libraryFeature: libraryFeature
         )
-        await viewModel.prepare(book, reduceMotion: true).value
+        await viewModel.prepareAdventure(with: book, reduceMotion: true).value
         viewModel.recordLanding(at: 0, word: "Pipa")
         viewModel.showDeath(collectedDoubloons: 4, activeSeconds: 125)
         #expect(viewModel.isDeathPresented)
@@ -103,7 +103,7 @@ struct GameViewModelTests {
         viewModel.retry()
         #expect(!viewModel.isDeathPresented)
         #expect(wordLeapFeature.runStatistics.doubloonsCollected == 4)
-        await viewModel.prepare(book).value
+        await viewModel.prepareAdventure(with: book).value
         #expect(wordLeapFeature.runStatistics.wordsCollected == 0)
         #expect(wordLeapFeature.runStatistics.activeSeconds == 0)
         viewModel.leaveLevel()
@@ -121,7 +121,7 @@ struct GameViewModelTests {
             wordLeapFeature: fixture.wordLeapFeature,
             libraryFeature: fixture.libraryFeature
         )
-        await viewModel.prepare().value
+        await viewModel.prepareAdventure().value
         let firstPlan = try #require(viewModel.activeLevel)
         for wordIndex in firstPlan.words.indices {
             viewModel.recordLanding(at: wordIndex, word: firstPlan.words[wordIndex])

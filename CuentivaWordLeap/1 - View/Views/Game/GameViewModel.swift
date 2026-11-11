@@ -116,11 +116,15 @@ final class GameViewModel {
         return String(localized: "Book \(number) completed!")
     }
 
-    func prepare(reduceMotion: Bool = false) -> Task<Void, Never> {
-        prepare(selectedBook, reduceMotion: reduceMotion)
+    func prepareAdventure(reduceMotion: Bool = false) -> Task<Void, Never> {
+        prepareAdventure(with: selectedBook, reduceMotion: reduceMotion)
     }
 
-    func prepare(_ book: StoryBook, reduceMotion: Bool = false, continuingRun: Bool = false) -> Task<Void, Never> {
+    func prepareAdventure(
+        with book: StoryBook,
+        reduceMotion: Bool = false,
+        continuingRun: Bool = false
+    ) -> Task<Void, Never> {
         let request = GamePreparationRequest(
             bookID: book.id,
             reduceMotion: reduceMotion,
@@ -146,7 +150,7 @@ final class GameViewModel {
                     preparationRequest = nil
                 }
             }
-            await wordLeapFeature.start(book: book, continuingRun: continuingRun).value
+            await wordLeapFeature.startAdventure(with: book, continuingRun: continuingRun).value
             guard !Task.isCancelled, preparationRevision == revision,
                   preparationError == nil, let level = activeLevel,
                   level.book.id == book.id else { return }
@@ -178,7 +182,7 @@ final class GameViewModel {
     @discardableResult
     func startNextLevel() -> Task<Void, Never>? {
         guard let nextBook else { return nil }
-        return prepare(nextBook, reduceMotion: reduceMotion, continuingRun: true)
+        return prepareAdventure(with: nextBook, reduceMotion: reduceMotion, continuingRun: true)
     }
 
     func recordLanding(at wordIndex: Int, word: String) {

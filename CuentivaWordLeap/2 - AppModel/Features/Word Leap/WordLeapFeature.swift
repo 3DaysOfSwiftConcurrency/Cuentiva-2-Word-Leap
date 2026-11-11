@@ -27,7 +27,7 @@ final class WordLeapFeature {
         self.libraryFeature = libraryFeature
     }
 
-    func start(book: StoryBook, continuingRun: Bool = false) -> Task<Void, Never> {
+    func startAdventure(with book: StoryBook, continuingRun: Bool = false) -> Task<Void, Never> {
         let request = PreparationRequest(bookID: book.id, continuingRun: continuingRun)
         if preparationRequest == request, let preparationTask { return preparationTask }
         preparationTask?.cancel()
