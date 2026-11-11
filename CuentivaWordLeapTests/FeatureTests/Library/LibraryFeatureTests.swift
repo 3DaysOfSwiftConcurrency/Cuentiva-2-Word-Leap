@@ -74,7 +74,7 @@ struct LibraryFeatureTests {
         #expect(libraryFeature.castles.map(\.number) == Array(1...52))
         for castle in libraryFeature.castles {
             #expect(libraryFeature.castles.filter { $0.isUnlocked && !$0.isCompleted }.map(\.id) == [castle.id])
-            await libraryFeature.recordCompletion(of: castle.id)
+            await libraryFeature.recordCompletion(of: castle.id).value
         }
         #expect(libraryFeature.castles.allSatisfy { $0.isUnlocked && $0.isCompleted })
     }
@@ -114,19 +114,34 @@ struct LibraryFeatureTests {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
         await fixture.libraryFeature.load().value
-        await fixture.libraryFeature.recordCompletion(of: "two")
+        await fixture.libraryFeature.recordCompletion(of: "two").value
         #expect(fixture.libraryFeature.completedBookIDs.isEmpty)
         #expect(fixture.libraryFeature.castles.map(\.isUnlocked) == [true, false, false])
-        await fixture.libraryFeature.recordCompletion(of: "one")
-        await fixture.libraryFeature.recordCompletion(of: "one")
+        await fixture.libraryFeature.recordCompletion(of: "one").value
+        await fixture.libraryFeature.recordCompletion(of: "one").value
         #expect(fixture.libraryFeature.castles.map(\.isUnlocked) == [true, true, false])
         #expect(fixture.libraryFeature.completedBookIDs == ["one"])
-        await fixture.libraryFeature.recordCompletion(of: "two")
+        await fixture.libraryFeature.recordCompletion(of: "two").value
         #expect(fixture.libraryFeature.castles.map(\.isUnlocked) == [true, true, true])
-        await fixture.libraryFeature.recordCompletion(of: "three")
+        await fixture.libraryFeature.recordCompletion(of: "three").value
         let last = try #require(fixture.libraryFeature.books.last)
         #expect(fixture.libraryFeature.nextBook(after: last) == nil)
         #expect(fixture.libraryFeature.castles.allSatisfy { $0.isCompleted })
+    }
+
+    @Test func distinctCompletionCommandsExecuteInAdmissionOrder() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        await fixture.libraryFeature.load().value
+
+        let firstCompletion = fixture.libraryFeature.recordCompletion(of: "one")
+        let secondCompletion = fixture.libraryFeature.recordCompletion(of: "two")
+        await firstCompletion.value
+        await secondCompletion.value
+
+        #expect(fixture.libraryFeature.completedBookIDs == ["one", "two"])
+        #expect(fixture.libraryFeature.castles.map(\.isUnlocked) == [true, true, true])
+        #expect(await fixture.levelProgressStore.completedBookIDs() == ["one", "two"])
     }
 
     @Test func previouslyCompletedOutOfOrderCastlesRemainReplayable() async throws {
@@ -142,7 +157,7 @@ struct LibraryFeatureTests {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
         await fixture.libraryFeature.load().value
-        await fixture.libraryFeature.recordCompletion(of: "one")
+        await fixture.libraryFeature.recordCompletion(of: "one").value
         guard let restoredDefaults = UserDefaults(suiteName: fixture.suiteName) else {
             throw CocoaError(.fileReadUnknown)
         }
@@ -166,7 +181,7 @@ struct LibraryFeatureTests {
             return
         }
         await #expect(throws: CastleAccessError.self) { try await fixture.libraryFeature.bookForPlay(id: "unknown") }
-        await fixture.libraryFeature.recordCompletion(of: "unknown")
+        await fixture.libraryFeature.recordCompletion(of: "unknown").value
         #expect(fixture.libraryFeature.completedBookIDs.isEmpty)
     }
 

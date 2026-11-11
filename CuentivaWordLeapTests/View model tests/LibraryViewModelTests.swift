@@ -120,7 +120,7 @@ struct LibraryViewModelTests {
         viewModel.select(first)
         #expect(viewModel.selectedBook?.id == "one")
         viewModel.selectedBook = nil
-        await fixture.libraryFeature.recordCompletion(of: first.id)
+        await fixture.libraryFeature.recordCompletion(of: first.id).value
         #expect(viewModel.conqueredCount == 1)
         #expect(viewModel.castles.map(\.number) == [1, 2, 3])
         viewModel.select(second)

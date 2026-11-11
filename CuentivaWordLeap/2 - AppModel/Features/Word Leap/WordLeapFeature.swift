@@ -94,7 +94,7 @@ final class WordLeapFeature {
                         self.completionTask = nil
                     }
                 }
-                await libraryFeature.recordCompletion(of: bookID)
+                await libraryFeature.recordCompletion(of: bookID).value
             }
             completionTask = completionSaveTask
         }

@@ -7,7 +7,7 @@ struct WordLeapFeatureTests {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
         await fixture.libraryFeature.load().value
-        await fixture.libraryFeature.recordCompletion(of: "one")
+        await fixture.libraryFeature.recordCompletion(of: "one").value
         let firstBook = try #require(fixture.libraryFeature.books.first { $0.id == "one" })
         let secondBook = try #require(fixture.libraryFeature.books.first { $0.id == "two" })
 

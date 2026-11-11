@@ -13,8 +13,10 @@ final class LibraryFeature {
     private(set) var isReady = false
     @ObservationIgnored private var loadingTask: Task<Void, Never>?
     @ObservationIgnored private var progressRefreshTask: Task<Void, Never>?
+    @ObservationIgnored private var completionSaveTask: Task<Void, Never>?
     private var loadingOperation: LibraryLoadingOperation?
     private var loadingRevision = 0
+    private var completionSaveRevision = 0
 
     init(bookRepository: CuentivaBookRepository, levelProgressStore: LevelProgressStore) {
         self.bookRepository = bookRepository
@@ -50,10 +52,27 @@ final class LibraryFeature {
         return castle.book
     }
 
-    func recordCompletion(of bookID: String) async {
-        guard let book = books.first(where: { $0.id == bookID }), canPlay(book) else { return }
-        await levelProgressStore.recordCompletion(of: bookID)
-        completedBookIDs.insert(bookID)
+    /// Completion commands are durable and execute in admission order across persistence.
+    @discardableResult
+    func recordCompletion(of bookID: String) -> Task<Void, Never> {
+        completionSaveRevision += 1
+        let revision = completionSaveRevision
+        let predecessor = completionSaveTask
+        let saveTask = Task { [levelProgressStore] in
+            defer {
+                if self.completionSaveRevision == revision {
+                    self.completionSaveTask = nil
+                }
+            }
+            await predecessor?.value
+            guard let book = self.books.first(where: { $0.id == bookID }), self.canPlay(book) else {
+                return
+            }
+            await levelProgressStore.recordCompletion(of: bookID)
+            self.completedBookIDs.insert(bookID)
+        }
+        completionSaveTask = saveTask
+        return saveTask
     }
 
     func load() -> Task<Void, Never> {
