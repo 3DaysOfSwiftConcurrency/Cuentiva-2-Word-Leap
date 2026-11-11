@@ -8,7 +8,7 @@ struct LibraryFeatureTests {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
         let gate = RemoteManuscriptGate()
-        let remoteManuscript = Data("@one|Pipa|Uno remoto|Remote One|A1\nHola.|Hello.\n".utf8)
+        let remoteManuscript = completeRemoteManuscript()
         let bookRepository = CuentivaBookRepository(
             networkingManager: NetworkingManager { _ in await gate.request() },
             bundledLibraryURL: fixture.directory.appendingPathComponent("Library.dat")
@@ -41,7 +41,7 @@ struct LibraryFeatureTests {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
         let gate = RemoteManuscriptGate()
-        let remoteManuscript = Data("@one|Pipa|Uno remoto|Remote One|A1\nHola.|Hello.\n".utf8)
+        let remoteManuscript = completeRemoteManuscript()
         let bookRepository = CuentivaBookRepository(
             networkingManager: NetworkingManager { _ in await gate.request() },
             bundledLibraryURL: fixture.directory.appendingPathComponent("Library.dat")
@@ -71,7 +71,7 @@ struct LibraryFeatureTests {
         await screenWaiter.value
 
         #expect(gate.requestCount == 1)
-        #expect(libraryFeature.books.map(\.title) == ["Uno remoto"])
+        #expect(libraryFeature.books.map(\.title) == ["Uno remoto", "Dos remoto", "Tres remoto"])
         #expect(libraryFeature.requestFailure == nil)
     }
 
@@ -79,7 +79,7 @@ struct LibraryFeatureTests {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
         let libraryURL = fixture.directory.appendingPathComponent("Library.dat")
-        let remoteManuscript = Data("@one|Pipa|Uno remoto|Remote One|A1\nHola.|Hello.\n".utf8)
+        let remoteManuscript = completeRemoteManuscript()
         let bookRepository = CuentivaBookRepository(
             networkingManager: NetworkingManager { _ in remoteManuscript },
             bundledLibraryURL: libraryURL
@@ -91,7 +91,7 @@ struct LibraryFeatureTests {
         await bundledLoad.value
         await remoteRefresh.value
 
-        #expect(libraryFeature.books.map(\.title) == ["Uno remoto"])
+        #expect(libraryFeature.books.map(\.title) == ["Uno remoto", "Dos remoto", "Tres remoto"])
         #expect(libraryFeature.requestFailure == nil)
         #expect(!libraryFeature.isLoading)
     }
@@ -99,7 +99,7 @@ struct LibraryFeatureTests {
     @Test func remoteRefreshOnAFreshFeatureEstablishesAReadyBundledBaseline() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        let remoteManuscript = Data("@one|Pipa|Uno remoto|Remote One|A1\nHola.|Hello.\n".utf8)
+        let remoteManuscript = completeRemoteManuscript()
         let bookRepository = CuentivaBookRepository(
             networkingManager: NetworkingManager { _ in remoteManuscript },
             bundledLibraryURL: fixture.directory.appendingPathComponent("Library.dat")
@@ -112,7 +112,7 @@ struct LibraryFeatureTests {
         await libraryFeature.refresh().value
 
         #expect(libraryFeature.isReady)
-        #expect(libraryFeature.books.map(\.title) == ["Uno remoto"])
+        #expect(libraryFeature.books.map(\.title) == ["Uno remoto", "Dos remoto", "Tres remoto"])
         #expect(libraryFeature.requestFailure == nil)
     }
 
@@ -253,6 +253,17 @@ struct LibraryFeatureTests {
         let second = try await fixture.libraryFeature.bookForPlay(id: "two")
         #expect(second.title == "Dos")
     }
+}
+
+private func completeRemoteManuscript() -> Data {
+    Data("""
+    @one|Pipa|Uno remoto|Remote One|A1
+    Hola.|Hello.
+    @two|Musgo|Dos remoto|Remote Two|A1
+    Corre.|Run.
+    @three|Mora|Tres remoto|Remote Three|A1
+    Mira.|Look.
+    """.utf8)
 }
 
 @MainActor

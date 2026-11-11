@@ -49,4 +49,62 @@ struct CuentivaBookRepositoryTests {
             try CuentivaBookRepository.decode(Data(repeating: 0x20, count: 5_000_001))
         }
     }
+
+    @Test @MainActor
+    func rejectsRemoteProgressionChangesAndPreservesTheEstablishedBooks() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        let incompleteRemote = Data(
+            "@one|Pipa|Uno remoto|Remote One|A1\nHola.|Hello.\n".utf8
+        )
+        let reorderedRemote = Data("""
+        @two|Musgo|Dos remoto|Remote Two|A1
+        Corre.|Run.
+        @one|Pipa|Uno remoto|Remote One|A1
+        Hola.|Hello.
+        @three|Mora|Tres remoto|Remote Three|A1
+        Mira.|Look.
+        """.utf8)
+
+        for invalidRemote in [incompleteRemote, reorderedRemote] {
+            let repository = CuentivaBookRepository(
+                networkingManager: NetworkingManager { _ in invalidRemote },
+                bundledLibraryURL: fixture.directory.appendingPathComponent("Library.dat")
+            )
+            let establishedBooks = try await repository.books()
+
+            await #expect(throws: CocoaError.self) {
+                try await repository.refreshFromGitHub()
+            }
+
+            let retainedBooks = try await repository.books()
+            #expect(retainedBooks.map(\.id) == establishedBooks.map(\.id))
+            #expect(retainedBooks.map(\.title) == ["Uno", "Dos", "Tres"])
+        }
+    }
+
+    @Test @MainActor
+    func acceptsContentUpdatesAndBooksAppendedAfterTheEstablishedProgression() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        let expandedRemote = Data("""
+        @one|Pipa|Uno remoto|Remote One|A1
+        Hola.|Hello.
+        @two|Musgo|Dos remoto|Remote Two|A1
+        Corre.|Run.
+        @three|Mora|Tres remoto|Remote Three|A1
+        Mira.|Look.
+        @four|Luma|Cuatro|Four|A1
+        Salta.|Jump.
+        """.utf8)
+        let repository = CuentivaBookRepository(
+            networkingManager: NetworkingManager { _ in expandedRemote },
+            bundledLibraryURL: fixture.directory.appendingPathComponent("Library.dat")
+        )
+
+        let refreshedBooks = try await repository.refreshFromGitHub()
+
+        #expect(refreshedBooks.map(\.id) == ["one", "two", "three", "four"])
+        #expect(refreshedBooks.first?.title == "Uno remoto")
+    }
 }

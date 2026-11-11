@@ -14,6 +14,10 @@ See `../Library-startup.md` for regeneration and stale-asset checks.
 
 `LibraryFeatureTests` also pauses a remote refresh behind a controlled gate and
 proves that the already loaded bundled catalogue remains immediately playable.
+It verifies that cancelling a screen waiter does not cancel the shared refresh
+and that a later caller joins the same request. Repository coverage rejects a
+remote catalogue that silently omits or reorders established castles,
+preserving open adventures and the established progression.
 The watchdog is cleanup protection; the passing path does not depend on a delay.
 
 Settings coverage: `SettingsFeatureTests` verifies restoration, persistence and

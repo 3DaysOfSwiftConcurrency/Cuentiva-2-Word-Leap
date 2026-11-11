@@ -32,12 +32,19 @@ actor CuentivaBookRepository {
 
     func refreshFromGitHub() async throws -> [StoryBook] {
         guard let githubStoriesURL else { throw CocoaError(.fileNoSuchFile) }
+        let establishedBooks = try books()
         let manuscriptData = try await networkingManager.data(from: githubStoriesURL)
         let coversByBookID = Dictionary(
-            try books().map { ($0.id, $0.cover) },
+            establishedBooks.map { ($0.id, $0.cover) },
             uniquingKeysWith: { first, _ in first }
         )
         let refreshedBooks = try Self.decode(manuscriptData, covers: coversByBookID)
+        let establishedBookIDs = establishedBooks.map(\.id)
+        let refreshedEstablishedBookIDs = refreshedBooks.prefix(establishedBooks.count).map(\.id)
+        guard refreshedEstablishedBookIDs == establishedBookIDs else {
+            // Omission, insertion or reordering is not an explicit progression migration.
+            throw CocoaError(.fileReadCorruptFile)
+        }
         cachedBooks = refreshedBooks
         return refreshedBooks
     }
