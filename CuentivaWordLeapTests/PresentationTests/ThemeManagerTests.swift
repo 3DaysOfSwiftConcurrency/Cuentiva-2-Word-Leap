@@ -8,7 +8,10 @@ struct ThemeManagerTests {
         let suiteName = "ThemeManagerTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        let settingsFeature = SettingsFeature(defaults: defaults)
+        let settingsFeature = SettingsFeature(
+            defaults: defaults,
+            appInformation: AppInformation(name: "Test App", version: "1.0", build: "1")
+        )
         let themeManager = ThemeManager(settingsFeature: settingsFeature)
 
         themeManager.selectedTheme = .twilight

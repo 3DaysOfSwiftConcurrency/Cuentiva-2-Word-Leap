@@ -6,7 +6,9 @@ final class CuentivaWordLeapAppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        AppModel.shared.applicationDidFinishLaunching()
+        Task {
+            await AppModel.shared.applicationDidFinishLaunching()
+        }
         return true
     }
 }

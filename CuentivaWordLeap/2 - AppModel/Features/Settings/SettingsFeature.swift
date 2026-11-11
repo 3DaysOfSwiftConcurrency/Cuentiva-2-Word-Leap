@@ -11,10 +11,12 @@ enum WordLeapTheme: String, CaseIterable, Identifiable {
 final class SettingsFeature {
     private static let selectedThemeStorageKey = "selectedWordLeapTheme"
     private let defaults: UserDefaults
+    let appInformation: AppInformation
     private(set) var selectedTheme: WordLeapTheme
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults, appInformation: AppInformation) {
         self.defaults = defaults
+        self.appInformation = appInformation
         let storedTheme = defaults.string(forKey: Self.selectedThemeStorageKey)
         selectedTheme = storedTheme.flatMap(WordLeapTheme.init(rawValue:)) ?? .system
     }
