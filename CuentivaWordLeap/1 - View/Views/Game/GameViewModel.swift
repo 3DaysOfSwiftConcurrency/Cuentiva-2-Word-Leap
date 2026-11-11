@@ -45,10 +45,14 @@ final class GameViewModel {
     var wordsRead: Int { wordLeapFeature.landedWordCount }
     var activeWordCount: Int { activeLevel?.words.count ?? currentBook.platformCount }
     var loadingCharacterAssetName: String { currentBook.characterProfile?.spriteAssetName ?? "WordLeapMora" }
-    var platformProgress: String { "\(wordsRead) / \(activeWordCount) platforms" }
+    var platformProgress: String {
+        "\(wordsRead) / \(activeWordCount) \(activeWordCount == 1 ? "platform" : "platforms")"
+    }
     var collectedDoubloonText: String { "\(collectedDoubloons)" }
-    var collectedDoubloonAccessibilityLabel: String { "\(collectedDoubloons) doubloons collected" }
-    var completionDoubloonText: String { "\(collectedDoubloons) doubloons collected" }
+    var collectedDoubloonAccessibilityLabel: String {
+        "\(collectedDoubloons) \(collectedDoubloons == 1 ? "doubloon" : "doubloons") collected"
+    }
+    var completionDoubloonText: String { collectedDoubloonAccessibilityLabel }
     var completionActionTitle: String { nextBook == nil ? "Adventure" : "Next level" }
     var completedBookCover: CompletedBookCoverPresentation {
         CompletedBookCoverPresentation(book: currentBook)
@@ -59,19 +63,28 @@ final class GameViewModel {
     var isLevelComplete: Bool { preparationError == nil && wordLeapFeature.isLevelComplete }
     var gameOverStatistics: [GameStatistic] {
         let stats = wordLeapFeature.runStatistics
-        let wholeSeconds = Int(stats.activeSeconds)
         return [
             GameStatistic(title: "Levels completed", displayValue: "\(stats.levelsCompleted)", symbol: "flag.checkered"),
             GameStatistic(title: "Platforms reached", displayValue: "\(stats.platformsReached)", symbol: "square.stack.3d.up.fill"),
             GameStatistic(title: "Doubloons", displayValue: "\(stats.doubloonsCollected)", symbol: "doubloon"),
             GameStatistic(title: "Time played",
-                displayValue: String(format: "%d:%02d", wholeSeconds / 60, wholeSeconds % 60),
+                displayValue: elapsedTimeText(for: stats.activeSeconds),
                 symbol: "clock.fill", detail: "minutes : seconds"),
             GameStatistic(title: "Words collected", displayValue: "\(stats.wordsCollected)", symbol: "textformat.abc"),
             GameStatistic(title: "Verbs recognised",
                 displayValue: stats.verbCountingAvailable ? "\(stats.verbsCollected)" : "—",
                 symbol: "text.book.closed.fill", detail: stats.verbCountingAvailable ? "vocabulary estimate" : "unavailable")
         ]
+    }
+
+    private func elapsedTimeText(for activeSeconds: TimeInterval) -> String {
+        guard activeSeconds.isFinite else { return "—" }
+        // Leave headroom below Int.max before converting untrusted or corrupt persisted values.
+        let maximumSafeWholeSeconds = Int.max / 60
+        let boundedSeconds = min(max(0, activeSeconds), Double(maximumSafeWholeSeconds))
+        let wholeSeconds = Int(boundedSeconds)
+        let secondText = String(format: "%02d", wholeSeconds % 60)
+        return "\(wholeSeconds / 60):\(secondText)"
     }
 
     var nextBook: StoryBook? {

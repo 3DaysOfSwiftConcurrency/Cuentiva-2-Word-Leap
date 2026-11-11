@@ -4,6 +4,19 @@ import Testing
 
 @MainActor
 struct LibraryViewModelTests {
+    @Test func castlePresentationUsesSingularPlatformCopy() {
+        let book = StoryBook(
+            id: "one-word",
+            storyteller: "Pipa",
+            title: "One Word",
+            englishTitle: "One Word",
+            spanishPassages: ["Hola"]
+        )
+        let castle = AdventureCastle(book: book, number: 1, isCompleted: false, isUnlocked: true)
+
+        #expect(AdventureCastlePresentation(castle: castle).statusText == "1 word platform")
+    }
+
     @Test func firstReadyPresentationIncludesSavedLocksAndBalance() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
@@ -78,14 +91,16 @@ struct LibraryViewModelTests {
     @Test func balanceLoadsSavedTreasureAndReflectsNewGameplayCredits() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        _ = await fixture.progress.addDoubloons(12)
+        _ = await fixture.progress.addDoubloons(1)
         let viewModel = LibraryViewModel(libraryFeature: fixture.library)
         await viewModel.load().value
-        #expect(viewModel.doubloonBalance == 12)
+        #expect(viewModel.doubloonBalance == 1)
+        #expect(viewModel.doubloonAccessibilityLabel == "1 doubloon")
         let first = try #require(viewModel.books.first)
         await fixture.game.start(book: first).value
         await fixture.game.recordCollectedDoubloons(2)?.value
-        #expect(viewModel.doubloonBalance == 14)
+        #expect(viewModel.doubloonBalance == 3)
+        #expect(viewModel.doubloonAccessibilityLabel == "3 doubloons")
     }
 
     @Test func mapSelectionHonoursLocksAndReflectsCompletion() async throws {

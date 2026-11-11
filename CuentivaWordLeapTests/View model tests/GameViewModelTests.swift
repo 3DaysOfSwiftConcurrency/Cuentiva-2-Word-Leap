@@ -52,13 +52,14 @@ struct GameViewModelTests {
             storyteller: "Pipa",
             title: "Removed",
             englishTitle: "Removed",
-            spanishPassages: ["Pipa salta."]
+            spanishPassages: ["Hola"]
         )
         let viewModel = GameViewModel(
             book: removedBook,
             wordLeapFeature: fixture.game,
             libraryFeature: fixture.library
         )
+        #expect(viewModel.platformProgress == "0 / 1 platform")
 
         await viewModel.prepare(removedBook).value
 
@@ -87,6 +88,14 @@ struct GameViewModelTests {
         #expect(viewModel.collectedDoubloonAccessibilityLabel == "4 doubloons collected")
         #expect(viewModel.completionDoubloonText == "4 doubloons collected")
         #expect(viewModel.completedBookCover.title == book.title)
+        viewModel.showDeath(collectedDoubloons: 1, activeSeconds: .greatestFiniteMagnitude)
+        #expect(viewModel.collectedDoubloonAccessibilityLabel == "1 doubloon collected")
+        #expect(viewModel.completionDoubloonText == "1 doubloon collected")
+        let extremeTime = try #require(
+            viewModel.gameOverStatistics.first { $0.title == "Time played" }?.displayValue
+        )
+        #expect(extremeTime.contains(":"))
+        #expect(extremeTime != "—")
         viewModel.retry()
         #expect(!viewModel.isDeathPresented)
         #expect(feature.runStatistics.doubloonsCollected == 4)

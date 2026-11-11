@@ -16,8 +16,12 @@ final class LibraryViewModel {
     var conqueredCount: Int { libraryFeature.conqueredCastleCount }
     var doubloonBalance: Int { libraryFeature.doubloonBalance }
     var doubloonBalanceText: String { "\(doubloonBalance)" }
-    var doubloonAccessibilityLabel: String { "\(doubloonBalance) doubloons" }
-    var castleCountText: String { "\(books.count) castles" }
+    var doubloonAccessibilityLabel: String {
+        "\(doubloonBalance) \(doubloonBalance == 1 ? "doubloon" : "doubloons")"
+    }
+    var castleCountText: String {
+        "\(books.count) \(books.count == 1 ? "castle" : "castles")"
+    }
     var conqueredCountText: String { "\(conqueredCount) conquered" }
     var errorMessage: String? {
         switch libraryFeature.requestFailure {
@@ -79,7 +83,8 @@ struct AdventureCastlePresentation: Identifiable {
             accessibilityLabel = "Castle \(castle.number), \(castle.book.title), conquered"
             accessibilityHint = "Opens this book's word-leap level"
         } else {
-            statusText = "\(castle.book.platformCount) word platforms"
+            let platformCount = castle.book.platformCount
+            statusText = "\(platformCount) word \(platformCount == 1 ? "platform" : "platforms")"
             statusSymbol = "sparkles"
             actionSymbol = "play.fill"
             accessibilityLabel = "Castle \(castle.number), \(castle.book.title), ready to play"
