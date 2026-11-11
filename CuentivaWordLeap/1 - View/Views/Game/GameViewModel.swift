@@ -165,8 +165,8 @@ final class GameViewModel {
                     showDeath(collectedDoubloons: collectedDoubloons, activeSeconds: activeSeconds)
                 },
                 reportLanding: { [weak self] wordIndex in
-                    guard let self, activeSceneID == sceneID else { return }
-                    recordLanding(at: wordIndex)
+                    guard let self, activeSceneID == sceneID else { return .ignored }
+                    return recordLanding(at: wordIndex)
                 })
         }
         preparationTask = newPreparationTask
@@ -179,10 +179,13 @@ final class GameViewModel {
         return prepareAdventure(with: nextBook, reduceMotion: reduceMotion, continuingRun: true)
     }
 
-    func recordLanding(at wordIndex: Int) {
-        guard wordLeapFeature.recordLanding(at: wordIndex),
-              let activeLevel, activeLevel.words.indices.contains(wordIndex) else { return }
+    @discardableResult
+    func recordLanding(at wordIndex: Int) -> PlatformLandingOutcome {
+        let outcome = wordLeapFeature.recordLanding(at: wordIndex)
+        guard outcome != .ignored,
+              let activeLevel, activeLevel.words.indices.contains(wordIndex) else { return outcome }
         lastReadWord = activeLevel.words[wordIndex]
+        return outcome
     }
 
     func showDeath(collectedDoubloons: Int, activeSeconds: TimeInterval) {

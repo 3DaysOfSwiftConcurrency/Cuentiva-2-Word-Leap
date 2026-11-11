@@ -45,17 +45,18 @@ struct WordLeapFeatureTests {
         await fixture.wordLeapFeature.startAdventure(with: book).value
         let plan = try #require(fixture.wordLeapFeature.activeLevel)
 
-        fixture.wordLeapFeature.recordLanding(at: plan.words.count - 1)
+        #expect(fixture.wordLeapFeature.recordLanding(at: plan.words.count - 1) == .ignored)
         #expect(fixture.wordLeapFeature.landedWordCount == 0)
         #expect(!fixture.wordLeapFeature.isLevelComplete)
 
-        fixture.wordLeapFeature.recordLanding(at: 0)
-        fixture.wordLeapFeature.recordLanding(at: 0)
+        #expect(fixture.wordLeapFeature.recordLanding(at: 0) == .progressed)
+        #expect(fixture.wordLeapFeature.recordLanding(at: 0) == .ignored)
         #expect(fixture.wordLeapFeature.landedWordCount == 1)
 
-        for wordIndex in plan.words.indices.dropFirst() {
-            fixture.wordLeapFeature.recordLanding(at: wordIndex)
+        for wordIndex in plan.words.indices.dropFirst().dropLast() {
+            #expect(fixture.wordLeapFeature.recordLanding(at: wordIndex) == .progressed)
         }
+        #expect(fixture.wordLeapFeature.recordLanding(at: plan.words.count - 1) == .completedLevel)
         #expect(fixture.wordLeapFeature.landedWordCount == plan.words.count)
         #expect(fixture.wordLeapFeature.isLevelComplete)
         // Wait for the earned completion to persist before removing test storage.

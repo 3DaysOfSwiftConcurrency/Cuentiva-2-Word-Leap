@@ -1,6 +1,12 @@
 import Foundation
 import Observation
 
+enum PlatformLandingOutcome: Equatable, Sendable {
+    case ignored
+    case progressed
+    case completedLevel
+}
+
 @MainActor @Observable
 final class WordLeapFeature {
     /// Artwork/profile catalogue only, not an inventory of unlocked characters.
@@ -77,10 +83,10 @@ final class WordLeapFeature {
     }
 
     @discardableResult
-    func recordLanding(at wordIndex: Int) -> Bool {
+    func recordLanding(at wordIndex: Int) -> PlatformLandingOutcome {
         guard let activeLevel, !isLevelComplete,
               activeLevel.words.indices.contains(wordIndex),
-              wordIndex == landedWordCount else { return false }
+              wordIndex == landedWordCount else { return .ignored }
         runStatistics.recordLanding(in: activeLevel, at: wordIndex)
         landedWordCount += 1
         isLevelComplete = landedWordCount == activeLevel.words.count
@@ -98,7 +104,7 @@ final class WordLeapFeature {
             }
             completionTask = completionSaveTask
         }
-        return true
+        return isLevelComplete ? .completedLevel : .progressed
     }
 
     @discardableResult

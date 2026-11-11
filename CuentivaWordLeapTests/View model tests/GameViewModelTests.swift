@@ -78,9 +78,9 @@ struct GameViewModelTests {
         )
         await viewModel.prepareAdventure(with: book, reduceMotion: true).value
         let firstWord = try #require(viewModel.activeLevel?.words.first)
-        viewModel.recordLanding(at: 0)
+        #expect(viewModel.recordLanding(at: 0) == .progressed)
         #expect(viewModel.lastReadWord == firstWord)
-        viewModel.recordLanding(at: 99)
+        #expect(viewModel.recordLanding(at: 99) == .ignored)
         #expect(viewModel.lastReadWord == firstWord)
         viewModel.showDeath(collectedDoubloons: 1, activeSeconds: 1)
         #expect(viewModel.collectedDoubloonAccessibilityLabel == "1 doubloon collected")
