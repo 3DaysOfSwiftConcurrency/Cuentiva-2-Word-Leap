@@ -51,7 +51,7 @@ final class LibraryFeature {
     }
 
     func recordCompletion(of bookID: String) async {
-        guard books.contains(where: { $0.id == bookID }) else { return }
+        guard let book = books.first(where: { $0.id == bookID }), canPlay(book) else { return }
         await levelProgressStore.recordCompletion(of: bookID)
         completedBookIDs.insert(bookID)
     }

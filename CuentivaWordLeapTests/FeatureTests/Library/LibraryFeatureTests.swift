@@ -114,6 +114,9 @@ struct LibraryFeatureTests {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
         await fixture.libraryFeature.load().value
+        await fixture.libraryFeature.recordCompletion(of: "two")
+        #expect(fixture.libraryFeature.completedBookIDs.isEmpty)
+        #expect(fixture.libraryFeature.castles.map(\.isUnlocked) == [true, false, false])
         await fixture.libraryFeature.recordCompletion(of: "one")
         await fixture.libraryFeature.recordCompletion(of: "one")
         #expect(fixture.libraryFeature.castles.map(\.isUnlocked) == [true, true, false])
