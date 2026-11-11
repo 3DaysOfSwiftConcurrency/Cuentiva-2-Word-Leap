@@ -39,15 +39,6 @@ struct StoryBook: Identifiable, Hashable, Sendable {
             )
         }
     }
-    var characterProfile: GameCharacter? { GameCharacter.storyteller(named: storyteller) }
-
-    var portraitAssetName: String {
-        characterProfile?.portraitAssetName ?? "StorytellerMora"
-    }
-
-    var backgroundAssetName: String { environment.backdropAssetName }
-
-    var environment: BookEnvironment { BookEnvironment.forBook(id: id) }
 }
 
 struct StoryBookPassage: Equatable, Sendable {

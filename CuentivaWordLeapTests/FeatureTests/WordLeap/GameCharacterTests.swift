@@ -24,16 +24,16 @@ struct GameCharacterTests {
     func booksResolveTheirStorytellerProfile(character: GameCharacter) {
         let book = StoryBook(id: "fixture", storyteller: character.name,
             title: "Un cuento", englishTitle: "A story", spanishPassages: [])
-        #expect(book.characterProfile == character)
-        #expect(book.portraitAssetName == character.portraitAssetName)
+        #expect(book.wordLeapCharacter == character)
+        #expect(book.wordLeapPortraitAssetName == character.portraitAssetName)
     }
 
     @Test func unknownStorytellerDoesNotImpersonateACollectible() {
         let book = StoryBook(id: "unknown", storyteller: "New storyteller",
             title: "Un cuento", englishTitle: "A story", spanishPassages: [])
-        #expect(book.characterProfile == nil)
+        #expect(book.wordLeapCharacter == nil)
         // Preserve the existing visual fallback without inventing a character identity.
-        #expect(book.portraitAssetName == "StorytellerMora")
+        #expect(book.wordLeapPortraitAssetName == "StorytellerMora")
         #expect(GameCharacter.storyteller(named: "") == nil)
     }
 

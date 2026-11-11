@@ -44,7 +44,9 @@ final class GameViewModel {
     }
     var wordsRead: Int { wordLeapFeature.landedWordCount }
     var activeWordCount: Int { activeLevel?.words.count ?? currentBook.platformCount }
-    var loadingCharacterAssetName: String { currentBook.characterProfile?.spriteAssetName ?? "WordLeapMora" }
+    var loadingCharacterAssetName: String {
+        currentBook.wordLeapCharacter?.spriteAssetName ?? "WordLeapMora"
+    }
     var platformProgress: String {
         "\(wordsRead) / \(activeWordCount) \(activeWordCount == 1 ? "platform" : "platforms")"
     }

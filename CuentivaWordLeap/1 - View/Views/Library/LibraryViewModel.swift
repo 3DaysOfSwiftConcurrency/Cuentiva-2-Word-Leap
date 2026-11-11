@@ -68,7 +68,7 @@ struct AdventureCastlePresentation: Identifiable {
         isUnlocked = castle.isUnlocked
         numberText = "\(castle.number)"
         heading = "CASTLE \(castle.number)"
-        characterAssetName = castle.book.characterProfile?.spriteAssetName ?? "WordLeapMora"
+        characterAssetName = castle.book.wordLeapCharacter?.spriteAssetName ?? "WordLeapMora"
 
         if !castle.isUnlocked {
             statusText = "Complete Castle \(castle.number - 1)"

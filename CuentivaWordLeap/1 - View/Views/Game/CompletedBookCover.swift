@@ -10,12 +10,12 @@ struct CompletedBookCoverPresentation: Equatable {
     let accessibilityLabel: String
 
     init(book: StoryBook) {
-        backgroundAssetName = book.backgroundAssetName
+        backgroundAssetName = book.wordLeapBackgroundAssetName
         levelText = "CUENTIVA / \(book.cover.level)"
         title = book.title
         symbol = book.cover.symbol == "train.side" ? "tram.fill" : book.cover.symbol
         storyteller = book.storyteller.uppercased()
-        portraitAssetName = book.portraitAssetName
+        portraitAssetName = book.wordLeapPortraitAssetName
         accessibilityLabel = "\(book.title), by \(book.storyteller)"
     }
 }

@@ -20,7 +20,7 @@ struct GameView: View {
                     .allowsHitTesting(!viewModel.isDeathPresented && !viewModel.isLevelComplete)
                     .ignoresSafeArea()
             } else {
-                WorldBackdrop(assetName: viewModel.currentBook.backgroundAssetName, shade: 0.3)
+                WorldBackdrop(assetName: viewModel.currentBook.wordLeapBackgroundAssetName, shade: 0.3)
                 if let error = viewModel.preparationError {
                     VStack(spacing: 16) {
                         Image(systemName: "lock.fill").font(.largeTitle)

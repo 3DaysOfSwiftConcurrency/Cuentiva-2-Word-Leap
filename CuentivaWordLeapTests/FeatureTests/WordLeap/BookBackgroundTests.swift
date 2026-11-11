@@ -66,16 +66,16 @@ struct BookBackgroundTests {
     @Test func firstTenBooksStayInSkyFalls() throws {
         let books = try bundledBooks()
         #expect(books.count == 52)
-        #expect(Array(books.prefix(10).map(\.environment)) == Array(repeating: .skyFalls, count: 10))
+        #expect(Array(books.prefix(10).map(\.wordLeapEnvironment)) == Array(repeating: .skyFalls, count: 10))
     }
 
     @Test func everyBookHasItsFixedAdventureEnvironment() throws {
         let books = try bundledBooks()
         #expect(books.map(\.id) == Self.adventure.map(\.id))
-        #expect(books.map(\.environment) == Self.adventure.map(\.environment))
-        #expect(Set(books.map(\.environment)) == Set(BookEnvironment.allCases))
+        #expect(books.map(\.wordLeapEnvironment) == Self.adventure.map(\.environment))
+        #expect(Set(books.map(\.wordLeapEnvironment)) == Set(BookEnvironment.allCases))
         for book in books {
-            #expect(book.backgroundAssetName == book.environment.backdropAssetName)
+            #expect(book.wordLeapBackgroundAssetName == book.wordLeapEnvironment.backdropAssetName)
         }
     }
 
@@ -89,23 +89,23 @@ struct BookBackgroundTests {
         var seen: Set<BookEnvironment> = []
         for (index, book) in books.enumerated() {
             if let debut = debuts[index + 1] {
-                #expect(book.environment == debut)
+                #expect(book.wordLeapEnvironment == debut)
                 #expect(!seen.contains(debut))
             } else {
-                #expect(seen.contains(book.environment), "No early reveal at book \(index + 1)")
+                #expect(seen.contains(book.wordLeapEnvironment), "No early reveal at book \(index + 1)")
             }
-            seen.insert(book.environment)
+            seen.insert(book.wordLeapEnvironment)
         }
     }
 
     @Test func environmentsAlternateAfterTheIntroduction() throws {
         let books = try bundledBooks()
         for (previous, next) in zip(books.dropFirst(9), books.dropFirst(10)) {
-            #expect(previous.environment != next.environment)
+            #expect(previous.wordLeapEnvironment != next.wordLeapEnvironment)
         }
-        #expect(Array(books.dropFirst(10).prefix(5).map(\.environment)) ==
+        #expect(Array(books.dropFirst(10).prefix(5).map(\.wordLeapEnvironment)) ==
             [.coast, .skyFalls, .coast, .skyFalls, .coast])
-        #expect(Array(books.dropFirst(15).prefix(5).map(\.environment)) ==
+        #expect(Array(books.dropFirst(15).prefix(5).map(\.wordLeapEnvironment)) ==
             [.roots, .skyFalls, .coast, .roots, .skyFalls])
     }
 
@@ -115,8 +115,8 @@ struct BookBackgroundTests {
             let renamed = StoryBook(id: book.id, storyteller: "Pipa", title: "A changed title",
                 englishTitle: "", spanishPassages: [])
             for _ in 0..<3 {
-                #expect(renamed.environment == book.environment)
-                #expect(renamed.backgroundAssetName == book.backgroundAssetName)
+                #expect(renamed.wordLeapEnvironment == book.wordLeapEnvironment)
+                #expect(renamed.wordLeapBackgroundAssetName == book.wordLeapBackgroundAssetName)
             }
         }
     }
@@ -124,9 +124,9 @@ struct BookBackgroundTests {
     @Test func newBooksReceiveTheReusableSkyFallsPack() {
         let book = StoryBook(id: "new-from-github", storyteller: "Pipa", title: "",
             englishTitle: "", spanishPassages: [])
-        #expect(book.environment == .skyFalls)
-        #expect(book.backgroundAssetName == "SkyFallsBackdrop")
-        #expect(!ParallaxSceneryRecipe(environment: book.environment).layers.isEmpty)
+        #expect(book.wordLeapEnvironment == .skyFalls)
+        #expect(book.wordLeapBackgroundAssetName == "SkyFallsBackdrop")
+        #expect(!ParallaxSceneryRecipe(environment: book.wordLeapEnvironment).layers.isEmpty)
     }
 
     #if canImport(UIKit)

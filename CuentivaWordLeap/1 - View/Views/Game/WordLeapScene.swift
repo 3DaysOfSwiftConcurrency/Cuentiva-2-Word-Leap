@@ -30,7 +30,10 @@ final class WordLeapScene: SKScene {
         reportLanding: @escaping @MainActor (_ wordIndex: Int, _ word: String) -> Void
     ) {
         self.levelPlan = levelPlan
-        scenery = ParallaxBackgroundNode(environment: levelPlan.book.environment, reduceMotion: reduceMotion)
+        scenery = ParallaxBackgroundNode(
+            environment: levelPlan.book.wordLeapEnvironment,
+            reduceMotion: reduceMotion
+        )
         self.reportLanding = reportLanding
         self.reportDeath = reportDeath
         self.reportCoinCount = reportCoinCount
