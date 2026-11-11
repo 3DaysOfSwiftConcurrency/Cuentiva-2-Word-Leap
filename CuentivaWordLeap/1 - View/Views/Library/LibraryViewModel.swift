@@ -1,3 +1,4 @@
+import Foundation
 import Observation
 
 @MainActor @Observable
@@ -17,18 +18,22 @@ final class LibraryViewModel {
     var doubloonBalance: Int { libraryFeature.doubloonBalance }
     var doubloonBalanceText: String { "\(doubloonBalance)" }
     var doubloonAccessibilityLabel: String {
-        "\(doubloonBalance) \(doubloonBalance == 1 ? "doubloon" : "doubloons")"
+        doubloonBalance == 1
+            ? String(localized: "\(doubloonBalance) doubloon")
+            : String(localized: "\(doubloonBalance) doubloons")
     }
     var castleCountText: String {
-        "\(books.count) \(books.count == 1 ? "castle" : "castles")"
+        books.count == 1
+            ? String(localized: "\(books.count) castle")
+            : String(localized: "\(books.count) castles")
     }
-    var conqueredCountText: String { "\(conqueredCount) conquered" }
+    var conqueredCountText: String { String(localized: "\(conqueredCount) conquered") }
     var errorMessage: String? {
         switch libraryFeature.requestFailure {
         case .bundledLibrary:
-            "The Cuentiva book collection could not be opened."
+            String(localized: "The Cuentiva book collection could not be opened.")
         case .remoteRefresh:
-            "GitHub could not refresh the collection. Your bundled books are still ready to play."
+            String(localized: "GitHub could not refresh the collection. Your bundled books are still ready to play.")
         case nil:
             nil
         }
@@ -67,28 +72,30 @@ struct AdventureCastlePresentation: Identifiable {
         isCompleted = castle.isCompleted
         isUnlocked = castle.isUnlocked
         numberText = "\(castle.number)"
-        heading = "CASTLE \(castle.number)"
+        heading = String(localized: "CASTLE \(castle.number)")
         characterAssetName = castle.book.wordLeapCharacter?.spriteAssetName ?? "WordLeapMora"
 
         if !castle.isUnlocked {
-            statusText = "Complete Castle \(castle.number - 1)"
+            statusText = String(localized: "Complete Castle \(castle.number - 1)")
             statusSymbol = "lock.fill"
             actionSymbol = "lock.fill"
-            accessibilityLabel = "Castle \(castle.number), \(castle.book.title), locked"
-            accessibilityHint = "Complete Castle \(castle.number - 1) to unlock"
+            accessibilityLabel = String(localized: "Castle \(castle.number), \(castle.book.title), locked")
+            accessibilityHint = String(localized: "Complete Castle \(castle.number - 1) to unlock")
         } else if castle.isCompleted {
-            statusText = "Conquered · Play again"
+            statusText = String(localized: "Conquered · Play again")
             statusSymbol = "flag.checkered"
             actionSymbol = "flag.checkered"
-            accessibilityLabel = "Castle \(castle.number), \(castle.book.title), conquered"
-            accessibilityHint = "Opens this book's word-leap level"
+            accessibilityLabel = String(localized: "Castle \(castle.number), \(castle.book.title), conquered")
+            accessibilityHint = String(localized: "Opens this book's word-leap level")
         } else {
             let platformCount = castle.book.platformCount
-            statusText = "\(platformCount) word \(platformCount == 1 ? "platform" : "platforms")"
+            statusText = platformCount == 1
+                ? String(localized: "\(platformCount) word platform")
+                : String(localized: "\(platformCount) word platforms")
             statusSymbol = "sparkles"
             actionSymbol = "play.fill"
-            accessibilityLabel = "Castle \(castle.number), \(castle.book.title), ready to play"
-            accessibilityHint = "Opens this book's word-leap level"
+            accessibilityLabel = String(localized: "Castle \(castle.number), \(castle.book.title), ready to play")
+            accessibilityHint = String(localized: "Opens this book's word-leap level")
         }
     }
 }

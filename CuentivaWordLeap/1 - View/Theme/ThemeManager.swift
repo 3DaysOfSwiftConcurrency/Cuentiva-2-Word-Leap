@@ -2,7 +2,17 @@ import Observation
 import SwiftUI
 
 extension WordLeapTheme {
-    var title: String { rawValue.capitalized }
+    var title: String {
+        switch self {
+        case .system: String(localized: "System")
+        case .storybook: String(localized: "Storybook")
+        case .sunrise: String(localized: "Sunrise")
+        case .forest: String(localized: "Forest")
+        case .ocean: String(localized: "Ocean")
+        case .twilight: String(localized: "Twilight")
+        case .midnight: String(localized: "Midnight")
+        }
+    }
 }
 
 @MainActor @Observable

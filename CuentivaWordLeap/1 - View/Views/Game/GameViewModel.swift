@@ -33,11 +33,11 @@ final class GameViewModel {
     var preparationError: String? {
         switch wordLeapFeature.preparationFailure {
         case .libraryUnavailable:
-            "The adventure could not be loaded. Return to the map and try again."
+            String(localized: "The adventure could not be loaded. Return to the map and try again.")
         case .unknownBook:
-            "This book is no longer on the adventure map."
+            String(localized: "This book is no longer on the adventure map.")
         case .locked(let previousCastle):
-            "Complete Castle \(previousCastle) to unlock this adventure."
+            String(localized: "Complete Castle \(previousCastle) to unlock this adventure.")
         case nil:
             nil
         }
@@ -48,34 +48,49 @@ final class GameViewModel {
         currentBook.wordLeapCharacter?.spriteAssetName ?? "WordLeapMora"
     }
     var platformProgress: String {
-        "\(wordsRead) / \(activeWordCount) \(activeWordCount == 1 ? "platform" : "platforms")"
+        activeWordCount == 1
+            ? String(localized: "\(wordsRead) / \(activeWordCount) platform")
+            : String(localized: "\(wordsRead) / \(activeWordCount) platforms")
     }
     var collectedDoubloonText: String { "\(collectedDoubloons)" }
     var collectedDoubloonAccessibilityLabel: String {
-        "\(collectedDoubloons) \(collectedDoubloons == 1 ? "doubloon" : "doubloons") collected"
+        collectedDoubloons == 1
+            ? String(localized: "\(collectedDoubloons) doubloon collected")
+            : String(localized: "\(collectedDoubloons) doubloons collected")
     }
     var completionDoubloonText: String { collectedDoubloonAccessibilityLabel }
-    var completionActionTitle: String { nextBook == nil ? "Adventure" : "Next level" }
+    var completionActionTitle: String {
+        nextBook == nil ? String(localized: "Adventure") : String(localized: "Next level")
+    }
     var completedBookCover: CompletedBookCoverPresentation {
         CompletedBookCoverPresentation(book: currentBook)
     }
     var readingCardText: String {
-        lastReadWord.isEmpty ? "Touch to jump. Hold left or right to steer." : lastReadWord
+        lastReadWord.isEmpty
+            ? String(localized: "Touch to jump. Hold left or right to steer.")
+            : lastReadWord
     }
     var isLevelComplete: Bool { preparationError == nil && wordLeapFeature.isLevelComplete }
     var gameOverStatistics: [GameStatistic] {
         let stats = wordLeapFeature.runStatistics
         return [
-            GameStatistic(title: "Levels completed", displayValue: "\(stats.levelsCompleted)", symbol: "flag.checkered"),
-            GameStatistic(title: "Platforms reached", displayValue: "\(stats.platformsReached)", symbol: "square.stack.3d.up.fill"),
-            GameStatistic(title: "Doubloons", displayValue: "\(stats.doubloonsCollected)", symbol: "doubloon"),
-            GameStatistic(title: "Time played",
+            GameStatistic(title: String(localized: "Levels completed"),
+                displayValue: "\(stats.levelsCompleted)", symbol: "flag.checkered"),
+            GameStatistic(title: String(localized: "Platforms reached"),
+                displayValue: "\(stats.platformsReached)", symbol: "square.stack.3d.up.fill"),
+            GameStatistic(title: String(localized: "Doubloons"),
+                displayValue: "\(stats.doubloonsCollected)", symbol: "doubloon"),
+            GameStatistic(title: String(localized: "Time played"),
                 displayValue: elapsedTimeText(for: stats.activeSeconds),
-                symbol: "clock.fill", detail: "minutes : seconds"),
-            GameStatistic(title: "Words collected", displayValue: "\(stats.wordsCollected)", symbol: "textformat.abc"),
-            GameStatistic(title: "Verbs recognised",
+                symbol: "clock.fill", detail: String(localized: "minutes : seconds")),
+            GameStatistic(title: String(localized: "Words collected"),
+                displayValue: "\(stats.wordsCollected)", symbol: "textformat.abc"),
+            GameStatistic(title: String(localized: "Verbs recognised"),
                 displayValue: stats.verbCountingAvailable ? "\(stats.verbsCollected)" : "—",
-                symbol: "text.book.closed.fill", detail: stats.verbCountingAvailable ? "vocabulary estimate" : "unavailable")
+                symbol: "text.book.closed.fill",
+                detail: stats.verbCountingAvailable
+                    ? String(localized: "vocabulary estimate")
+                    : String(localized: "unavailable"))
         ]
     }
 
@@ -96,9 +111,9 @@ final class GameViewModel {
 
     var completionTitle: String {
         guard let book = activeLevel?.book, let number = libraryFeature.bookNumber(for: book) else {
-            return "Book completed!"
+            return String(localized: "Book completed!")
         }
-        return "Book \(number) completed!"
+        return String(localized: "Book \(number) completed!")
     }
 
     func prepare(reduceMotion: Bool = false) -> Task<Void, Never> {
