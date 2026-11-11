@@ -37,7 +37,7 @@ struct LibraryFeatureTests {
         await refresh.value
     }
 
-    @Test func cancellingTheOnlyWaiterKeepsTheSharedRefreshAliveForALaterCaller() async throws {
+    @Test func cancellingTheOnlyWaiterKeepsTheSharedRefreshAliveWithoutAReplacement() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
         let gate = RemoteManuscriptGate()
@@ -55,7 +55,6 @@ struct LibraryFeatureTests {
         let screenWaiter = Task { await libraryFeature.refresh().value }
         await gate.waitUntilRequested()
         screenWaiter.cancel()
-        let laterRefresh = libraryFeature.refresh()
         let watchdog = Task {
             try? await Task.sleep(for: .seconds(2))
             guard !Task.isCancelled else { return }
@@ -67,8 +66,34 @@ struct LibraryFeatureTests {
         }
 
         gate.release(with: remoteManuscript)
-        await laterRefresh.value
         await screenWaiter.value
+
+        #expect(gate.requestCount == 1)
+        #expect(libraryFeature.books.map(\.title) == ["Uno remoto", "Dos remoto", "Tres remoto"])
+        #expect(libraryFeature.requestFailure == nil)
+    }
+
+    @Test func laterEquivalentCallerJoinsTheSharedRefreshWithoutASecondRequest() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        let gate = RemoteManuscriptGate()
+        let remoteManuscript = completeRemoteManuscript()
+        let libraryFeature = LibraryFeature(
+            bookRepository: CuentivaBookRepository(
+                networkingManager: NetworkingManager { _ in await gate.request() },
+                bundledLibraryURL: fixture.directory.appendingPathComponent("Library.dat")
+            ),
+            levelProgressStore: fixture.levelProgressStore
+        )
+        await libraryFeature.load().value
+
+        let firstWaiter = Task { await libraryFeature.refresh().value }
+        await gate.waitUntilRequested()
+        let laterRefresh = libraryFeature.refresh()
+        firstWaiter.cancel()
+        gate.release(with: remoteManuscript)
+        await firstWaiter.value
+        await laterRefresh.value
 
         #expect(gate.requestCount == 1)
         #expect(libraryFeature.books.map(\.title) == ["Uno remoto", "Dos remoto", "Tres remoto"])
