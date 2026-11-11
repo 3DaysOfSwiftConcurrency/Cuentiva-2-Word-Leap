@@ -16,7 +16,7 @@ struct CompletedBookCoverPresentation: Equatable {
         symbol = book.cover.symbol == "train.side" ? "tram.fill" : book.cover.symbol
         storyteller = book.storyteller.uppercased()
         portraitAssetName = book.wordLeapPortraitAssetName
-        accessibilityLabel = "\(book.title), by \(book.storyteller)"
+        accessibilityLabel = String(localized: "\(book.title), by \(book.storyteller)")
     }
 }
 

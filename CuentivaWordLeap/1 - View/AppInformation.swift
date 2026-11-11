@@ -23,6 +23,6 @@ struct AppInformation: Equatable, Sendable {
     static let current = AppInformation(bundle: .main)
 
     var versionDescription: String {
-        "Version \(version) (\(build))"
+        String(localized: "Version \(version) (\(build))")
     }
 }
