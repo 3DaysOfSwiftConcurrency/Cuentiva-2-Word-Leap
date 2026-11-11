@@ -21,6 +21,7 @@ final class WordLeapFeature {
     private var completionRevision = 0
     private var doubloonSaveRevision = 0
     private var creditedLevelDoubloons = 0
+    var collectedDoubloonCount: Int { creditedLevelDoubloons }
 
     init(levelPlanBuilder: LevelPlanBuilder, libraryFeature: LibraryFeature) {
         self.levelPlanBuilder = levelPlanBuilder
@@ -92,12 +93,14 @@ final class WordLeapFeature {
         return true
     }
 
-    func recordRunProgress(doubloons: Int, activeSeconds: Double) {
-        guard let activeLevel else { return }
+    @discardableResult
+    func recordRunProgress(doubloons: Int, activeSeconds: Double) -> Int {
+        guard let activeLevel else { return 0 }
         let collectedDoubloons = validatedDoubloonCount(doubloons, for: activeLevel)
         _ = recordCollectedDoubloons(collectedDoubloons)
         runStatistics.recordProgress(bookID: activeLevel.book.id,
             doubloons: collectedDoubloons, activeSeconds: activeSeconds)
+        return creditedLevelDoubloons
     }
 
     /// The scene reports a cumulative count. Credit only its increase, including across retries.

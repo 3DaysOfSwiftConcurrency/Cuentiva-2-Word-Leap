@@ -192,19 +192,24 @@ final class GameViewModel {
     }
 
     func showDeath(collectedDoubloons: Int, activeSeconds: TimeInterval) {
-        wordLeapFeature.recordRunProgress(doubloons: collectedDoubloons, activeSeconds: activeSeconds)
-        self.collectedDoubloons = collectedDoubloons
+        self.collectedDoubloons = wordLeapFeature.recordRunProgress(
+            doubloons: collectedDoubloons,
+            activeSeconds: activeSeconds
+        )
         isDeathPresented = true
     }
 
     private func recordCollectedDoubloons(_ reportedDoubloonCount: Int) {
-        collectedDoubloons = reportedDoubloonCount
         wordLeapFeature.recordCollectedDoubloons(reportedDoubloonCount)
+        collectedDoubloons = wordLeapFeature.collectedDoubloonCount
     }
 
     private func showCompletedBook(collectedDoubloons: Int, activeSeconds: TimeInterval) {
-        wordLeapFeature.recordRunProgress(doubloons: collectedDoubloons, activeSeconds: activeSeconds)
-        self.collectedDoubloons = collectedDoubloons
+        guard wordLeapFeature.isLevelComplete else { return }
+        self.collectedDoubloons = wordLeapFeature.recordRunProgress(
+            doubloons: collectedDoubloons,
+            activeSeconds: activeSeconds
+        )
         isBookRevealed = true
     }
     func dismissDeath() { isDeathPresented = false }
