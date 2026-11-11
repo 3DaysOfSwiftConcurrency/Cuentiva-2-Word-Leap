@@ -12,8 +12,6 @@ final class SettingsFeature {
     private static let selectedThemeStorageKey = "selectedWordLeapTheme"
     private let defaults: UserDefaults
     private(set) var selectedTheme: WordLeapTheme
-    let contentAttribution = "Open Source Cuentiva Spanish Book Collection"
-    let architecture = "Cooperative Feature Architecture"
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults

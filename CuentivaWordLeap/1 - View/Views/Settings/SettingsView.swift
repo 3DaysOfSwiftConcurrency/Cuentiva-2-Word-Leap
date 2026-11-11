@@ -5,7 +5,7 @@ struct SettingsView: View {
     @State private var viewModel = SettingsViewModel()
 
     var body: some View {
-        @Bindable var themeManager = themeManager
+        @Bindable var viewModel = viewModel
 
         NavigationStack {
             ScrollView {
@@ -27,7 +27,7 @@ struct SettingsView: View {
                         Text("APPEARANCE")
                             .font(.caption.weight(.heavy)).tracking(2)
                             .foregroundStyle(themeManager.worldAccent)
-                        Picker("Colour theme", selection: $themeManager.selectedTheme) {
+                        Picker("Colour theme", selection: $viewModel.selectedTheme) {
                             ForEach(WordLeapTheme.allCases) { theme in
                                 Text(theme.title).tag(theme)
                             }

@@ -14,7 +14,15 @@ final class SettingsViewModel {
         self.appInformation = appInformation
     }
 
-    var contentAttribution: String { settingsFeature.contentAttribution }
-    var architecture: String { settingsFeature.architecture }
+    var selectedTheme: WordLeapTheme {
+        get { settingsFeature.selectedTheme }
+        set { settingsFeature.selectTheme(newValue) }
+    }
+    var contentAttribution: String {
+        String(localized: "Open Source Cuentiva Spanish Book Collection")
+    }
+    var architecture: String {
+        String(localized: "Cooperative Feature Architecture")
+    }
     var version: String { appInformation.versionDescription }
 }
