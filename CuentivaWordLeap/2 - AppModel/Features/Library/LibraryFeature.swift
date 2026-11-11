@@ -97,10 +97,10 @@ final class LibraryFeature {
     func refreshProgress() -> Task<Void, Never> {
         if let progressRefreshTask { return progressRefreshTask }
         let task = Task { [levelProgressStore] in
-            async let completed = levelProgressStore.completedBookIDs()
-            async let balance = levelProgressStore.doubloonBalance()
-            completedBookIDs.formUnion(await completed)
-            doubloonBalance = max(doubloonBalance, await balance)
+            async let savedCompletedBookIDs = levelProgressStore.completedBookIDs()
+            async let savedDoubloonBalance = levelProgressStore.doubloonBalance()
+            completedBookIDs.formUnion(await savedCompletedBookIDs)
+            doubloonBalance = max(doubloonBalance, await savedDoubloonBalance)
             progressRefreshTask = nil
         }
         progressRefreshTask = task
@@ -132,14 +132,18 @@ final class LibraryFeature {
         levelProgressStore: LevelProgressStore
     ) async {
         do {
-            async let catalogue = repository.books()
-            async let completed = levelProgressStore.completedBookIDs()
-            async let balance = levelProgressStore.doubloonBalance()
-            let snapshot = try await (catalogue, completed, balance)
+            async let catalogueRequest = repository.books()
+            async let completedBookIDsRequest = levelProgressStore.completedBookIDs()
+            async let doubloonBalanceRequest = levelProgressStore.doubloonBalance()
+            let (loadedBooks, savedCompletedBookIDs, savedDoubloonBalance) = try await (
+                catalogueRequest,
+                completedBookIDsRequest,
+                doubloonBalanceRequest
+            )
             // Publish the first presentation together, never briefly show zero progress.
-            books = snapshot.0
-            completedBookIDs.formUnion(snapshot.1)
-            doubloonBalance = max(doubloonBalance, snapshot.2)
+            books = loadedBooks
+            completedBookIDs.formUnion(savedCompletedBookIDs)
+            doubloonBalance = max(doubloonBalance, savedDoubloonBalance)
             requestFailure = nil
             isReady = true
         }
