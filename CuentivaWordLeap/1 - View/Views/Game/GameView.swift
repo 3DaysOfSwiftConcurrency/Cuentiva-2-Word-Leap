@@ -91,7 +91,7 @@ struct GameView: View {
         }
         .animation(.easeOut(duration: 0.2), value: viewModel.isDeathPresented)
         .animation(.easeOut(duration: 0.3), value: viewModel.isBookRevealed)
-        .onChange(of: scenePhase) { _, _ in viewModel.scene?.resetFrameClock() }
+        .onChange(of: scenePhase) { _, _ in viewModel.scenePhaseDidChange() }
         .toolbar(.hidden, for: .navigationBar)
         .task {
             await viewModel.prepare(reduceMotion: reduceMotion).value

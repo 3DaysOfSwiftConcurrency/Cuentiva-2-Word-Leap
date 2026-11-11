@@ -187,6 +187,10 @@ final class GameViewModel {
     }
     func dismissDeath() { isDeathPresented = false }
 
+    func scenePhaseDidChange() {
+        scene?.resetFrameClock()
+    }
+
     func retry() {
         scene?.retryFromCheckpoint()
         dismissDeath()
