@@ -77,16 +77,16 @@ final class LibraryFeature {
 
     func load() -> Task<Void, Never> {
         if let loadingTask { return loadingTask }
-        return beginLoading(.bundled, after: nil)
+        return enqueueLoadingOperation(.bundled, after: nil)
     }
 
     func refresh() -> Task<Void, Never> {
         if loadingOperation == .remote, let loadingTask { return loadingTask }
         let bundledLoad = books.isEmpty ? load() : loadingTask
-        return beginLoading(.remote, after: bundledLoad)
+        return enqueueLoadingOperation(.remote, after: bundledLoad)
     }
 
-    private func beginLoading(
+    private func enqueueLoadingOperation(
         _ operation: LibraryLoadingOperation,
         after predecessor: Task<Void, Never>?
     ) -> Task<Void, Never> {
