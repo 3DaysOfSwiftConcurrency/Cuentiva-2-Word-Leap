@@ -6,7 +6,6 @@ import CoreGraphics
 final class GameViewModel {
     private let selectedBook: StoryBook
     private let wordLeapFeature: WordLeapFeature
-    private let libraryFeature: LibraryFeature
     private var reduceMotion = false
     @ObservationIgnored private var preparationTask: Task<Void, Never>?
     private var preparationRequest: GamePreparationRequest?
@@ -20,12 +19,10 @@ final class GameViewModel {
 
     init(
         book: StoryBook,
-        wordLeapFeature: WordLeapFeature = AppModel.shared.wordLeapFeature,
-        libraryFeature: LibraryFeature = AppModel.shared.libraryFeature
+        wordLeapFeature: WordLeapFeature = AppModel.shared.wordLeapFeature
     ) {
         selectedBook = book
         self.wordLeapFeature = wordLeapFeature
-        self.libraryFeature = libraryFeature
     }
 
     var activeLevel: LevelPlan? { wordLeapFeature.activeLevel }
@@ -104,13 +101,10 @@ final class GameViewModel {
         return "\(wholeSeconds / 60):\(secondText)"
     }
 
-    var nextBook: StoryBook? {
-        guard let book = activeLevel?.book else { return nil }
-        return libraryFeature.nextBook(after: book)
-    }
+    var nextBook: StoryBook? { wordLeapFeature.nextBook }
 
     var completionTitle: String {
-        guard let book = activeLevel?.book, let number = libraryFeature.bookNumber(for: book) else {
+        guard let number = wordLeapFeature.currentBookNumber else {
             return String(localized: "Book completed!")
         }
         return String(localized: "Book \(number) completed!")

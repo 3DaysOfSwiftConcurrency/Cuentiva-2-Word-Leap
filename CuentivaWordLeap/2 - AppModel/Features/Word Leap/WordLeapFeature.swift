@@ -22,6 +22,14 @@ final class WordLeapFeature {
     private var doubloonSaveRevision = 0
     private var creditedLevelDoubloons = 0
     var collectedDoubloonCount: Int { creditedLevelDoubloons }
+    var nextBook: StoryBook? {
+        guard let currentBook = activeLevel?.book else { return nil }
+        return libraryFeature.nextBook(after: currentBook)
+    }
+    var currentBookNumber: Int? {
+        guard let currentBook = activeLevel?.book else { return nil }
+        return libraryFeature.bookNumber(for: currentBook)
+    }
 
     init(levelPlanBuilder: LevelPlanBuilder, libraryFeature: LibraryFeature) {
         self.levelPlanBuilder = levelPlanBuilder

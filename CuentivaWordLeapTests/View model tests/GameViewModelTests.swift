@@ -13,8 +13,7 @@ struct GameViewModelTests {
         let secondBook = try #require(fixture.libraryFeature.books.first { $0.id == "two" })
         let viewModel = GameViewModel(
             book: firstBook,
-            wordLeapFeature: fixture.wordLeapFeature,
-            libraryFeature: fixture.libraryFeature
+            wordLeapFeature: fixture.wordLeapFeature
         )
 
         let firstPreparation = viewModel.prepareAdventure(with: firstBook)
@@ -34,8 +33,7 @@ struct GameViewModelTests {
         let second = try #require(fixture.libraryFeature.books.first { $0.id == "two" })
         let viewModel = GameViewModel(
             book: second,
-            wordLeapFeature: fixture.wordLeapFeature,
-            libraryFeature: fixture.libraryFeature
+            wordLeapFeature: fixture.wordLeapFeature
         )
         await viewModel.prepareAdventure(with: second).value
         #expect(viewModel.scene == nil)
@@ -56,8 +54,7 @@ struct GameViewModelTests {
         )
         let viewModel = GameViewModel(
             book: removedBook,
-            wordLeapFeature: fixture.wordLeapFeature,
-            libraryFeature: fixture.libraryFeature
+            wordLeapFeature: fixture.wordLeapFeature
         )
         #expect(viewModel.platformProgress == "0 / 1 platform")
 
@@ -77,8 +74,7 @@ struct GameViewModelTests {
         let book = try #require(libraryFeature.books.first)
         let viewModel = GameViewModel(
             book: book,
-            wordLeapFeature: wordLeapFeature,
-            libraryFeature: libraryFeature
+            wordLeapFeature: wordLeapFeature
         )
         await viewModel.prepareAdventure(with: book, reduceMotion: true).value
         let firstWord = try #require(viewModel.activeLevel?.words.first)
@@ -125,8 +121,7 @@ struct GameViewModelTests {
         let firstBook = try #require(fixture.libraryFeature.books.first)
         let viewModel = GameViewModel(
             book: firstBook,
-            wordLeapFeature: fixture.wordLeapFeature,
-            libraryFeature: fixture.libraryFeature
+            wordLeapFeature: fixture.wordLeapFeature
         )
         await viewModel.prepareAdventure().value
         let firstPlan = try #require(viewModel.activeLevel)
