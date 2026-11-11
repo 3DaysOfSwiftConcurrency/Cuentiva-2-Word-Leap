@@ -72,4 +72,68 @@ struct CastleAccessTests {
         await fixture.wordLeapFeature.startAdventure(with: first).value
         #expect(fixture.wordLeapFeature.activeLevel?.book.id == first.id)
     }
+
+    @Test func obsoletePreparationCannotPublishOrClearItsPendingReplacement() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        await fixture.libraryFeature.load().value
+        await fixture.libraryFeature.recordCompletion(of: "one").value
+        let first = try #require(fixture.libraryFeature.books.first { $0.id == "one" })
+        let second = try #require(fixture.libraryFeature.books.first { $0.id == "two" })
+        let controlledBuilder = ControlledLevelPlanBuilder()
+        let wordLeapFeature = WordLeapFeature(
+            levelPlanBuilder: controlledBuilder,
+            libraryFeature: fixture.libraryFeature
+        )
+
+        let obsoletePreparation = wordLeapFeature.startAdventure(with: first)
+        await controlledBuilder.waitUntilRequested(bookID: first.id)
+        let currentPreparation = wordLeapFeature.startAdventure(with: second)
+        await controlledBuilder.waitUntilRequested(bookID: second.id)
+
+        await controlledBuilder.release(bookID: first.id)
+        await obsoletePreparation.value
+        let joinedCurrentPreparation = wordLeapFeature.startAdventure(with: second)
+        let secondRequestCount = await controlledBuilder.requestCount(for: second.id)
+        #expect(secondRequestCount == 1)
+
+        await controlledBuilder.release(bookID: second.id)
+        await currentPreparation.value
+        await joinedCurrentPreparation.value
+
+        #expect(wordLeapFeature.activeLevel?.book.id == second.id)
+        #expect(wordLeapFeature.preparationFailure == nil)
+    }
+}
+
+private actor ControlledLevelPlanBuilder: LevelPlanBuilding {
+    private var requestCounts: [String: Int] = [:]
+    private var requestWaiters: [String: [CheckedContinuation<Void, Never>]] = [:]
+    private var planWaiters: [String: [CheckedContinuation<Void, Never>]] = [:]
+    private var releasedBookIDs: Set<String> = []
+
+    func makePlan(for book: StoryBook) async -> LevelPlan {
+        requestCounts[book.id, default: 0] += 1
+        let waiters = requestWaiters.removeValue(forKey: book.id) ?? []
+        for waiter in waiters { waiter.resume() }
+        if !releasedBookIDs.contains(book.id) {
+            await withCheckedContinuation { planWaiters[book.id, default: []].append($0) }
+        }
+        return LevelPlan(book: book, words: book.spanishPassages.flatMap(SpanishWordTokenizer.platformTokens))
+    }
+
+    func waitUntilRequested(bookID: String) async {
+        guard requestCounts[bookID, default: 0] == 0 else { return }
+        await withCheckedContinuation { requestWaiters[bookID, default: []].append($0) }
+    }
+
+    func release(bookID: String) {
+        releasedBookIDs.insert(bookID)
+        let waiters = planWaiters.removeValue(forKey: bookID) ?? []
+        for waiter in waiters { waiter.resume() }
+    }
+
+    func requestCount(for bookID: String) -> Int {
+        requestCounts[bookID, default: 0]
+    }
 }

@@ -111,6 +111,9 @@ through isolated features. It also checks singular gameplay copy and safe elapse
 presentation for an extreme finite value; it requires the hosted iOS test target. SpriteKit reports
 gameplay events synchronously on the main actor, preserving their frame order rather
 than creating an independently scheduled task for each callback.
+`CastleAccessTests` holds an obsolete preparation open, starts its replacement,
+then completes the obsolete work first to prove stale publication and cleanup
+cannot replace or detach the current Feature-owned task.
 
 Device checks: fall, see the friendly skeleton transition, inspect the six summary tiles,
 continue from checkpoint, finish a book and choose Next level, then die again. Also test

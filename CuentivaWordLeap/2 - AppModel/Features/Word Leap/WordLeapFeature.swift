@@ -11,7 +11,7 @@ enum PlatformLandingOutcome: Equatable, Sendable {
 final class WordLeapFeature {
     /// Artwork/profile catalogue only, not an inventory of unlocked characters.
     let characterProfiles = GameCharacter.cuentivaCast
-    private let levelPlanBuilder: LevelPlanBuilder
+    private let levelPlanBuilder: any LevelPlanBuilding
     private let libraryFeature: LibraryFeature
     private(set) var activeLevel: LevelPlan?
     private(set) var preparationFailure: CastleAccessError?
@@ -37,7 +37,7 @@ final class WordLeapFeature {
         return libraryFeature.bookNumber(for: currentBook)
     }
 
-    init(levelPlanBuilder: LevelPlanBuilder, libraryFeature: LibraryFeature) {
+    init(levelPlanBuilder: any LevelPlanBuilding, libraryFeature: LibraryFeature) {
         self.levelPlanBuilder = levelPlanBuilder
         self.libraryFeature = libraryFeature
     }

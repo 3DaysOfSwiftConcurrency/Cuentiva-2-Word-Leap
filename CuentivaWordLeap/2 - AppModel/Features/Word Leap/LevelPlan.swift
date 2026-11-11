@@ -19,7 +19,11 @@ struct LevelPlan: Sendable {
     }
 }
 
-actor LevelPlanBuilder {
+protocol LevelPlanBuilding: Actor {
+    func makePlan(for book: StoryBook) async -> LevelPlan
+}
+
+actor LevelPlanBuilder: LevelPlanBuilding {
     private let vocabularyURL: URL?
     private var cachedVerbForms: Set<String>?
 
@@ -27,7 +31,7 @@ actor LevelPlanBuilder {
         self.vocabularyURL = vocabularyURL
     }
 
-    func makePlan(for book: StoryBook) -> LevelPlan {
+    func makePlan(for book: StoryBook) async -> LevelPlan {
         let words = book.spanishPassages.flatMap(SpanishWordTokenizer.platformTokens)
         guard let forms = verbForms() else {
             // The book remains playable, but the UI must not present an unavailable count as zero.
