@@ -68,9 +68,11 @@ final class WordLeapFeature {
     }
 
     func recordLanding(at wordIndex: Int) {
-        guard let activeLevel, !isLevelComplete, activeLevel.words.indices.contains(wordIndex) else { return }
+        guard let activeLevel, !isLevelComplete,
+              activeLevel.words.indices.contains(wordIndex),
+              wordIndex == landedWordCount else { return }
         runStatistics.recordLanding(in: activeLevel, at: wordIndex)
-        landedWordCount = max(landedWordCount, wordIndex + 1)
+        landedWordCount += 1
         isLevelComplete = landedWordCount == activeLevel.words.count
         if isLevelComplete {
             let bookID = activeLevel.book.id

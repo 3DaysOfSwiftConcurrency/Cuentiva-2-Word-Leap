@@ -20,14 +20,42 @@ struct WordLeapFeatureTests {
         #expect(fixture.wordLeapFeature.preparationFailure == nil)
     }
 
-    @Test func completingTheFinalWordCompletesTheLevel() async throws {
+    @Test func completingEveryWordInOrderCompletesTheLevel() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
         await fixture.libraryFeature.load().value
         let book = try #require(fixture.libraryFeature.books.first)
         await fixture.wordLeapFeature.startAdventure(with: book).value
         let plan = try #require(fixture.wordLeapFeature.activeLevel)
+        for wordIndex in plan.words.indices {
+            fixture.wordLeapFeature.recordLanding(at: wordIndex)
+        }
+        #expect(fixture.wordLeapFeature.landedWordCount == plan.words.count)
+        #expect(fixture.wordLeapFeature.isLevelComplete)
+        // Wait for the earned completion to persist before removing test storage.
+        await fixture.wordLeapFeature.startAdventure(with: book).value
+        #expect(await fixture.levelProgressStore.completedBookIDs() == [book.id])
+    }
+
+    @Test func skippedAndDuplicateLandingReportsCannotCompleteTheLevel() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        await fixture.libraryFeature.load().value
+        let book = try #require(fixture.libraryFeature.books.first)
+        await fixture.wordLeapFeature.startAdventure(with: book).value
+        let plan = try #require(fixture.wordLeapFeature.activeLevel)
+
         fixture.wordLeapFeature.recordLanding(at: plan.words.count - 1)
+        #expect(fixture.wordLeapFeature.landedWordCount == 0)
+        #expect(!fixture.wordLeapFeature.isLevelComplete)
+
+        fixture.wordLeapFeature.recordLanding(at: 0)
+        fixture.wordLeapFeature.recordLanding(at: 0)
+        #expect(fixture.wordLeapFeature.landedWordCount == 1)
+
+        for wordIndex in plan.words.indices.dropFirst() {
+            fixture.wordLeapFeature.recordLanding(at: wordIndex)
+        }
         #expect(fixture.wordLeapFeature.landedWordCount == plan.words.count)
         #expect(fixture.wordLeapFeature.isLevelComplete)
         // Wait for the earned completion to persist before removing test storage.
