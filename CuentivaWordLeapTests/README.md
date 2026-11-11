@@ -19,7 +19,9 @@ The watchdog is cleanup protection; the passing path does not depend on a delay.
 Settings coverage: `SettingsFeatureTests` verifies restoration, persistence and
 safe fallback from an obsolete stored theme. `ThemeManagerTests` verifies that
 the presentation palette reads and writes the Feature-owned selection rather
-than owning a second persistence path.
+than owning a second persistence path. `SettingsViewModelTests` verifies that the
+screen routes theme selection through that Feature while keeping About copy and
+injected app-version presentation at the ViewModel boundary.
 
 Persistent treasure coverage: `DoubloonBalanceTests` checks duplicate/lower reports,
 checkpoint-safe crediting, leaving during a save, fresh replay earnings, invalid counts,
@@ -97,7 +99,8 @@ from Verbos, plus the explicit unavailable state for a missing vocabulary. This 
 estimate: homographs and verbs outside that teaching collection are not fully classified.
 `View model tests/GameViewModelTests.swift` covers the summary, retry and fresh-start
 presentation, changed-request replacement and observable next-level completion
-through isolated features; it requires the hosted iOS test target. SpriteKit reports
+through isolated features. It also checks singular gameplay copy and safe elapsed-time
+presentation for an extreme finite value; it requires the hosted iOS test target. SpriteKit reports
 gameplay events synchronously on the main actor, preserving their frame order rather
 than creating an independently scheduled task for each callback.
 
