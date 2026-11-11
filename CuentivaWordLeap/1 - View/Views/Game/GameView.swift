@@ -91,7 +91,7 @@ struct GameView: View {
         }
         .animation(.easeOut(duration: 0.2), value: viewModel.isDeathPresented)
         .animation(.easeOut(duration: 0.3), value: viewModel.isBookRevealed)
-        .onChange(of: scenePhase) { _, _ in viewModel.scenePhaseDidChange() }
+        .onChange(of: scenePhase) { _, _ in viewModel.resetSceneFrameClock() }
         .toolbar(.hidden, for: .navigationBar)
         .task {
             await viewModel.prepareAdventure(reduceMotion: reduceMotion).value
@@ -120,7 +120,7 @@ struct GameView: View {
     }
 
     private func retry() {
-        viewModel.retry()
+        viewModel.retryFromCheckpoint()
     }
 }
 

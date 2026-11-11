@@ -100,7 +100,7 @@ struct GameViewModelTests {
         )
         #expect(extremeTime.contains(":"))
         #expect(extremeTime != "—")
-        viewModel.retry()
+        viewModel.retryFromCheckpoint()
         #expect(!viewModel.isDeathPresented)
         #expect(wordLeapFeature.runStatistics.doubloonsCollected == 4)
         await viewModel.prepareAdventure(with: book).value
