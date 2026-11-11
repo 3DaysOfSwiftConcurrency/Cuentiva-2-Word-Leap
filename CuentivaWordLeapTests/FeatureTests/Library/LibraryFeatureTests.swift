@@ -37,6 +37,44 @@ struct LibraryFeatureTests {
         await refresh.value
     }
 
+    @Test func cancellingTheOnlyWaiterKeepsTheSharedRefreshAliveForALaterCaller() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        let gate = RemoteManuscriptGate()
+        let remoteManuscript = Data("@one|Pipa|Uno remoto|Remote One|A1\nHola.|Hello.\n".utf8)
+        let bookRepository = CuentivaBookRepository(
+            networkingManager: NetworkingManager { _ in await gate.request() },
+            bundledLibraryURL: fixture.directory.appendingPathComponent("Library.dat")
+        )
+        let libraryFeature = LibraryFeature(
+            bookRepository: bookRepository,
+            levelProgressStore: fixture.levelProgressStore
+        )
+        await libraryFeature.load().value
+
+        let screenWaiter = Task { await libraryFeature.refresh().value }
+        await gate.waitUntilRequested()
+        screenWaiter.cancel()
+        let laterRefresh = libraryFeature.refresh()
+        let watchdog = Task {
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            gate.release(with: remoteManuscript)
+        }
+        defer {
+            watchdog.cancel()
+            gate.release(with: remoteManuscript)
+        }
+
+        gate.release(with: remoteManuscript)
+        await laterRefresh.value
+        await screenWaiter.value
+
+        #expect(gate.requestCount == 1)
+        #expect(libraryFeature.books.map(\.title) == ["Uno remoto"])
+        #expect(libraryFeature.requestFailure == nil)
+    }
+
     @Test func remoteRefreshQueuedDuringBundledLoadStillRuns() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
@@ -221,17 +259,19 @@ struct LibraryFeatureTests {
 private final class RemoteManuscriptGate {
     private var requestStarted = false
     private var startedWaiters: [CheckedContinuation<Void, Never>] = []
-    private var responseContinuation: CheckedContinuation<Data, Never>?
+    private var responseContinuations: [CheckedContinuation<Data, Never>] = []
     private var releasedData: Data?
     private(set) var hasReleasedResponse = false
+    private(set) var requestCount = 0
 
     func request() async -> Data {
+        requestCount += 1
         requestStarted = true
         let waiters = startedWaiters
         startedWaiters.removeAll()
         for waiter in waiters { waiter.resume() }
         if let releasedData { return releasedData }
-        return await withCheckedContinuation { responseContinuation = $0 }
+        return await withCheckedContinuation { responseContinuations.append($0) }
     }
 
     func waitUntilRequested() async {
@@ -242,11 +282,14 @@ private final class RemoteManuscriptGate {
     func release(with data: Data) {
         guard !hasReleasedResponse else { return }
         hasReleasedResponse = true
-        if let responseContinuation {
-            self.responseContinuation = nil
-            responseContinuation.resume(returning: data)
-        } else {
+        if responseContinuations.isEmpty {
             releasedData = data
+        } else {
+            let continuations = responseContinuations
+            responseContinuations.removeAll()
+            for continuation in continuations {
+                continuation.resume(returning: data)
+            }
         }
     }
 }
