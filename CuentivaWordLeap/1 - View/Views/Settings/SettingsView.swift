@@ -43,7 +43,7 @@ struct SettingsView: View {
                             .font(.caption.weight(.heavy)).tracking(2)
                             .foregroundStyle(themeManager.worldAccent)
                         LabeledContent("App") {
-                            Text("Cuentiva 2: Word Leap")
+                            Text(viewModel.appName)
                                 .multilineTextAlignment(.trailing)
                                 .foregroundStyle(themeManager.worldAccent)
                         }

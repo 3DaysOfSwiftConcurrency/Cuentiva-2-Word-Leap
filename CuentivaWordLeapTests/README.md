@@ -21,7 +21,7 @@ safe fallback from an obsolete stored theme. `ThemeManagerTests` verifies that
 the presentation palette reads and writes the Feature-owned selection rather
 than owning a second persistence path. `SettingsViewModelTests` verifies that the
 screen routes theme selection through that Feature while keeping About copy and
-injected app-version presentation at the ViewModel boundary.
+injected app-identity presentation at the ViewModel boundary.
 
 Persistent treasure coverage: `DoubloonBalanceTests` checks duplicate/lower reports,
 checkpoint-safe crediting, leaving during a save, fresh replay earnings, invalid counts,

@@ -24,5 +24,6 @@ final class SettingsViewModel {
     var architecture: String {
         String(localized: "Cooperative Feature Architecture")
     }
+    var appName: String { appInformation.name }
     var version: String { appInformation.versionDescription }
 }
