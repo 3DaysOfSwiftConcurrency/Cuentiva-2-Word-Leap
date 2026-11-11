@@ -39,7 +39,9 @@ the same LibraryFeature → LevelProgressStore.
 LibraryFeature owns numbering, access and completion publication. AdventureCastle
 is its immutable book/number/access snapshot. WordLeapFeature validates access
 through LibraryFeature before building a level; the canonical catalogue book is
-used rather than trusting a supplied book's contents. Completion is saved before
+used rather than trusting a supplied book's contents. New completion commands are
+accepted only for the currently unlocked progression; previously saved out-of-order
+completion remains readable for compatibility. Completion is saved before
 publication. Its retained completion task outlives leaving the game and is awaited
 by the next start request. Existing progress refreshes merge monotonically so
 an older read cannot remove a newly published completion.

@@ -30,11 +30,13 @@ without changing completed castles. `LibraryViewModelTests` checks saved-balance
 and live gameplay updates. The HUD and transparent pinned header still need iOS visual checks.
 
 `FeatureTests/Library/LibraryFeatureTests.swift` checks numbered access for all
-52 castles, one-at-a-time unlocks, saved progress restoration, completed-book
+52 castles, one-at-a-time unlocks, rejection of direct locked-castle completion, saved progress restoration, completed-book
 replays (including legacy out-of-order completions), unavailable catalogues and
 unknown IDs. `CastleAccessTests` checks gameplay denial, partial progress,
 completion-save ordering before Next level, cancellation, and canonical book
-content. `LibraryViewModelTests` checks disabled selection and live map updates.
+content. `WordLeapFeatureTests` verifies that duplicate, skipped and final-only
+landing reports cannot complete a level. `LibraryViewModelTests` checks disabled
+selection and live map updates.
 These run in the macOS package with production LibraryFeature, AppModel and
 LibraryViewModel sources; tests inject their own graph and never use AppModel.shared.
 
@@ -91,13 +93,14 @@ Such a run verifies the production simulation, not SpriteKit rendering, touch de
 safe-area layout, or physical-device performance. Those still need an iOS playtest.
 
 Game Over coverage: `AdventureRunStatisticsTests` verifies unique word/platform/verb
-counts, cumulative book totals and duplicate-safe coin/time reports. `ActivePlayTimeTests`
+counts, full-platform completion, cumulative book totals and duplicate-safe coin/time reports. `ActivePlayTimeTests`
 checks that waiting and death add no time and checkpoint retries/resizing preserve it.
 `AdventureRunFeatureTests` checks next-level continuity versus a fresh adventure.
 `LevelPlanBuilderTests` checks offline verb-form matching against the vocabulary reused
 from Verbos, plus the explicit unavailable state for a missing vocabulary. This is an
 estimate: homographs and verbs outside that teaching collection are not fully classified.
-`View model tests/GameViewModelTests.swift` covers the summary, retry and fresh-start
+`View model tests/GameViewModelTests.swift` covers the summary, Feature-validated
+landing words and rewards, retry and fresh-start
 presentation, changed-request replacement and observable next-level completion
 through isolated features. It also checks singular gameplay copy and safe elapsed-time
 presentation for an extreme finite value; it requires the hosted iOS test target. SpriteKit reports
