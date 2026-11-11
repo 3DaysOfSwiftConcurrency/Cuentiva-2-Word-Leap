@@ -90,16 +90,17 @@ final class WordLeapFeature {
 
     func recordRunProgress(doubloons: Int, activeSeconds: Double) {
         guard let activeLevel else { return }
-        _ = recordCollectedDoubloons(doubloons)
+        let collectedDoubloons = validatedDoubloonCount(doubloons, for: activeLevel)
+        _ = recordCollectedDoubloons(collectedDoubloons)
         runStatistics.recordProgress(bookID: activeLevel.book.id,
-            doubloons: doubloons, activeSeconds: activeSeconds)
+            doubloons: collectedDoubloons, activeSeconds: activeSeconds)
     }
 
     /// The scene reports a cumulative count. Credit only its increase, including across retries.
     @discardableResult
     func recordCollectedDoubloons(_ reportedDoubloonCount: Int) -> Task<Void, Never>? {
         guard let activeLevel else { return doubloonSaveTask }
-        let collectedDoubloons = min(max(0, reportedDoubloonCount), min(30, activeLevel.words.count))
+        let collectedDoubloons = validatedDoubloonCount(reportedDoubloonCount, for: activeLevel)
         let earnedDoubloons = collectedDoubloons - creditedLevelDoubloons
         guard earnedDoubloons > 0 else { return doubloonSaveTask }
         creditedLevelDoubloons = collectedDoubloons
@@ -118,6 +119,10 @@ final class WordLeapFeature {
         // Durable credits continue if the player leaves or begins another level.
         doubloonSaveTask = task
         return task
+    }
+
+    private func validatedDoubloonCount(_ reportedCount: Int, for level: LevelPlan) -> Int {
+        min(max(0, reportedCount), min(30, level.words.count))
     }
 
     func endLevel() {

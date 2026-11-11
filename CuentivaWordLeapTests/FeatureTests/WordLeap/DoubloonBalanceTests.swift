@@ -45,7 +45,10 @@ struct DoubloonBalanceTests {
         await fixture.wordLeapFeature.startAdventure(with: book).value
         let level = try #require(fixture.wordLeapFeature.activeLevel)
         await fixture.wordLeapFeature.recordCollectedDoubloons(100)?.value
-        #expect(fixture.libraryFeature.doubloonBalance == min(30, level.words.count))
+        let availableDoubloons = min(30, level.words.count)
+        #expect(fixture.libraryFeature.doubloonBalance == availableDoubloons)
+        fixture.wordLeapFeature.recordRunProgress(doubloons: 100, activeSeconds: 1)
+        #expect(fixture.wordLeapFeature.runStatistics.doubloonsCollected == availableDoubloons)
     }
 
     @Test func overlappingCreditsAndRefreshKeepTheNewestBalance() async throws {
