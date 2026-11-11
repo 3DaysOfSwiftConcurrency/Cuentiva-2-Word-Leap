@@ -32,7 +32,7 @@ struct AdventureRunStatistics: Sendable {
             if plan.verbIndices.contains(index) { statistics.verbCount += 1 }
         }
         statistics.verbCountingAvailable = statistics.verbCountingAvailable && plan.verbCountingAvailable
-        statistics.isComplete = statistics.isComplete || index == plan.words.count - 1
+        statistics.isComplete = statistics.reachedPlatformIndices.count == plan.words.count
         statisticsByBookID[plan.book.id] = statistics
     }
 

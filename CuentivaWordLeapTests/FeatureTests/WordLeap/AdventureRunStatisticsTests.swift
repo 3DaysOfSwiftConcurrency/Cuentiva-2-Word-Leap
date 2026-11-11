@@ -2,6 +2,19 @@ import Testing
 @testable import CuentivaWordLeap
 
 struct AdventureRunStatisticsTests {
+    @Test func reachingOnlyTheFinalPlatformDoesNotCompleteTheLevel() {
+        let plan = fixture()
+        var stats = AdventureRunStatistics()
+
+        stats.recordLanding(in: plan, at: plan.words.count - 1)
+        #expect(stats.levelsCompleted == 0)
+
+        for index in plan.words.indices.dropLast() {
+            stats.recordLanding(in: plan, at: index)
+        }
+        #expect(stats.levelsCompleted == 1)
+    }
+
     @Test func countsWordsAndVerbsWithoutCountingPunctuationOrRepeatLandings() {
         let plan = fixture()
         var stats = AdventureRunStatistics()
