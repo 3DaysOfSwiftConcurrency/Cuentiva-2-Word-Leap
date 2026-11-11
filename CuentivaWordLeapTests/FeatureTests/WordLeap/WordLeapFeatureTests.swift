@@ -6,32 +6,32 @@ struct WordLeapFeatureTests {
     @Test func aChangedBookRequestReplacesPreparationInsteadOfBeingDropped() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        await fixture.library.load().value
-        await fixture.library.recordCompletion(of: "one")
-        let firstBook = try #require(fixture.library.books.first { $0.id == "one" })
-        let secondBook = try #require(fixture.library.books.first { $0.id == "two" })
+        await fixture.libraryFeature.load().value
+        await fixture.libraryFeature.recordCompletion(of: "one")
+        let firstBook = try #require(fixture.libraryFeature.books.first { $0.id == "one" })
+        let secondBook = try #require(fixture.libraryFeature.books.first { $0.id == "two" })
 
-        let firstPreparation = fixture.game.start(book: firstBook)
-        let secondPreparation = fixture.game.start(book: secondBook)
+        let firstPreparation = fixture.wordLeapFeature.start(book: firstBook)
+        let secondPreparation = fixture.wordLeapFeature.start(book: secondBook)
         await firstPreparation.value
         await secondPreparation.value
 
-        #expect(fixture.game.activeLevel?.book.id == secondBook.id)
-        #expect(fixture.game.preparationFailure == nil)
+        #expect(fixture.wordLeapFeature.activeLevel?.book.id == secondBook.id)
+        #expect(fixture.wordLeapFeature.preparationFailure == nil)
     }
 
     @Test func completingTheFinalWordCompletesTheLevel() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        await fixture.library.load().value
-        let book = try #require(fixture.library.books.first)
-        await fixture.game.start(book: book).value
-        let plan = try #require(fixture.game.activeLevel)
-        fixture.game.recordLanding(at: plan.words.count - 1)
-        #expect(fixture.game.landedWordCount == plan.words.count)
-        #expect(fixture.game.isLevelComplete)
+        await fixture.libraryFeature.load().value
+        let book = try #require(fixture.libraryFeature.books.first)
+        await fixture.wordLeapFeature.start(book: book).value
+        let plan = try #require(fixture.wordLeapFeature.activeLevel)
+        fixture.wordLeapFeature.recordLanding(at: plan.words.count - 1)
+        #expect(fixture.wordLeapFeature.landedWordCount == plan.words.count)
+        #expect(fixture.wordLeapFeature.isLevelComplete)
         // Wait for the earned completion to persist before removing test storage.
-        await fixture.game.start(book: book).value
-        #expect(await fixture.progress.completedBookIDs() == [book.id])
+        await fixture.wordLeapFeature.start(book: book).value
+        #expect(await fixture.levelProgressStore.completedBookIDs() == [book.id])
     }
 }

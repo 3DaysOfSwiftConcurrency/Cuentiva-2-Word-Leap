@@ -7,16 +7,16 @@ struct AppModelTests {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
         let appModel = AppModel(
-            libraryFeature: fixture.library,
-            wordLeapFeature: fixture.game,
+            libraryFeature: fixture.libraryFeature,
+            wordLeapFeature: fixture.wordLeapFeature,
             settingsFeature: SettingsFeature()
         )
 
         appModel.applicationDidFinishLaunching()
         appModel.applicationDidFinishLaunching()
-        await fixture.library.load().value
+        await fixture.libraryFeature.load().value
 
-        #expect(fixture.library.isReady)
-        #expect(fixture.library.books.count == 3)
+        #expect(fixture.libraryFeature.isReady)
+        #expect(fixture.libraryFeature.books.count == 3)
     }
 }

@@ -6,18 +6,18 @@ import Testing
 struct WordLeapSimulationTests {
     @Test func coinsRequireContactAndRemainCollectedAfterRetryAndResize() {
         let words = Array(repeating: "historia", count: 200)
-        var game = WordLeapSimulation(words: words, viewport: CGSize(width: 420, height: 912))
-        #expect(game.coins.count == 30)
-        #expect(game.collectedCoins.isEmpty)
-        _ = game.launch()
-        _ = game.advance(delta: 1.0 / 60, steeringTargetX: nil)
-        #expect(game.collectedCoins == [0])
-        game.resetToCheckpoint()
-        _ = game.launch()
-        _ = game.advance(delta: 1.0 / 60, steeringTargetX: nil)
-        #expect(game.collectedCoins == [0])
+        var simulation = WordLeapSimulation(words: words, viewport: CGSize(width: 420, height: 912))
+        #expect(simulation.coins.count == 30)
+        #expect(simulation.collectedCoins.isEmpty)
+        _ = simulation.launch()
+        _ = simulation.advance(delta: 1.0 / 60, steeringTargetX: nil)
+        #expect(simulation.collectedCoins == [0])
+        simulation.resetToCheckpoint()
+        _ = simulation.launch()
+        _ = simulation.advance(delta: 1.0 / 60, steeringTargetX: nil)
+        #expect(simulation.collectedCoins == [0])
         let resized = WordLeapSimulation(words: words, viewport: CGSize(width: 852, height: 393),
-            checkpointIndex: game.furthestPlatformIndex, collectedCoins: game.collectedCoins)
+            checkpointIndex: simulation.furthestPlatformIndex, collectedCoins: simulation.collectedCoins)
         #expect(resized.collectedCoins == [0])
         #expect(resized.coins.count == 30)
     }
@@ -30,72 +30,72 @@ struct WordLeapSimulationTests {
     }
 
     @Test func deathPausesUntilExplicitRetryAndKeepsCheckpoint() throws {
-        var game = WordLeapSimulation(words: ["En", "este", "mercado"],
+        var simulation = WordLeapSimulation(words: ["En", "este", "mercado"],
             viewport: CGSize(width: 420, height: 912), checkpointIndex: 1)
-        let checkpoint = game.platforms[1]
-        _ = game.launch()
+        let checkpoint = simulation.platforms[1]
+        _ = simulation.launch()
         var deathNotifications = 0
         for _ in 0..<600 {
-            _ = game.advance(delta: 1.0 / 60, steeringTargetX: 420)
-            if game.detectFall(below: checkpoint.frame.minY - 300) { deathNotifications += 1 }
+            _ = simulation.advance(delta: 1.0 / 60, steeringTargetX: 420)
+            if simulation.detectFall(below: checkpoint.frame.minY - 300) { deathNotifications += 1 }
         }
-        #expect(game.isDead)
+        #expect(simulation.isDead)
         #expect(deathNotifications == 1)
-        #expect(game.furthestPlatformIndex == 1)
-        let fallenPosition = game.position
-        #expect(game.launch() == nil)
-        _ = game.advance(delta: 1, steeringTargetX: 0)
-        #expect(game.position == fallenPosition)
+        #expect(simulation.furthestPlatformIndex == 1)
+        let fallenPosition = simulation.position
+        #expect(simulation.launch() == nil)
+        _ = simulation.advance(delta: 1, steeringTargetX: 0)
+        #expect(simulation.position == fallenPosition)
 
-        game.resetToCheckpoint()
-        #expect(!game.isDead)
-        #expect(game.isWaitingForLaunch)
-        #expect(game.furthestPlatformIndex == 1)
-        #expect(game.position == CGPoint(x: checkpoint.frame.midX,
+        simulation.resetToCheckpoint()
+        #expect(!simulation.isDead)
+        #expect(simulation.isWaitingForLaunch)
+        #expect(simulation.furthestPlatformIndex == 1)
+        #expect(simulation.position == CGPoint(x: checkpoint.frame.midX,
             y: checkpoint.frame.maxY + WordLeapSimulation.footOffset))
-        _ = game.launch()
-        #expect(!game.isWaitingForLaunch)
-        #expect(game.verticalVelocity > 0)
+        _ = simulation.launch()
+        #expect(!simulation.isWaitingForLaunch)
+        #expect(simulation.verticalVelocity > 0)
     }
 
     @Test func spawnRemainsSupportedUntilTouch() throws {
-        var game = WordLeapSimulation(words: ["En", "este", "mercado"], viewport: CGSize(width: 420, height: 912))
-        let first = try #require(game.platforms.first)
-        let spawn = game.position
-        for _ in 0..<600 { _ = game.advance(delta: 1.0 / 60, steeringTargetX: 0) }
-        #expect(game.position == spawn)
-        #expect(game.position.x == first.frame.midX)
-        #expect(abs(game.position.y - WordLeapSimulation.footOffset - first.frame.maxY) < 0.000001)
-        #expect(game.isWaitingForLaunch)
+        var simulation = WordLeapSimulation(words: ["En", "este", "mercado"], viewport: CGSize(width: 420, height: 912))
+        let first = try #require(simulation.platforms.first)
+        let spawn = simulation.position
+        for _ in 0..<600 { _ = simulation.advance(delta: 1.0 / 60, steeringTargetX: 0) }
+        #expect(simulation.position == spawn)
+        #expect(simulation.position.x == first.frame.midX)
+        #expect(abs(simulation.position.y - WordLeapSimulation.footOffset - first.frame.maxY) < 0.000001)
+        #expect(simulation.isWaitingForLaunch)
     }
 
     @Test(arguments: [30, 60, 120])
     func topEdgeContactBouncesInsteadOfFallingThrough(fps: Int) throws {
-        var game = WordLeapSimulation(words: ["En", "este", "mercado"], viewport: CGSize(width: 420, height: 912))
-        let first = try #require(game.platforms.first)
-        #expect(game.launch() == 0)
+        var simulation = WordLeapSimulation(words: ["En", "este", "mercado"], viewport: CGSize(width: 420, height: 912))
+        let first = try #require(simulation.platforms.first)
+        #expect(simulation.launch() == 0)
         var bounces = 0
         for _ in 0..<(fps * 8) {
-            let velocity = game.verticalVelocity
-            _ = game.advance(delta: 1.0 / Double(fps), steeringTargetX: nil)
-            if velocity < 0, game.verticalVelocity > 0 { bounces += 1 }
-            #expect(game.position.y - WordLeapSimulation.footOffset >= first.frame.maxY - 0.001)
+            let velocity = simulation.verticalVelocity
+            _ = simulation.advance(delta: 1.0 / Double(fps), steeringTargetX: nil)
+            if velocity < 0, simulation.verticalVelocity > 0 { bounces += 1 }
+            #expect(simulation.position.y - WordLeapSimulation.footOffset >= first.frame.maxY - 0.001)
         }
         #expect(bounces > 3)
     }
 
     @Test func checkpointAndResizeRemainSupported() throws {
-        var game = WordLeapSimulation(words: ["En", "este", "mercado"],
+        var simulation = WordLeapSimulation(words: ["En", "este", "mercado"],
             viewport: CGSize(width: 420, height: 912), checkpointIndex: 1)
-        _ = game.launch()
-        for _ in 0..<180 { _ = game.advance(delta: 1.0 / 60, steeringTargetX: 420) }
-        game.resetToCheckpoint()
-        let checkpoint = game.platforms[game.furthestPlatformIndex]
-        #expect(game.position.x == checkpoint.frame.midX)
-        #expect(game.position.y == checkpoint.frame.maxY + WordLeapSimulation.footOffset)
-        #expect(game.isWaitingForLaunch)
-        let resized = WordLeapSimulation(words: game.platforms.map(\.word),
-            viewport: CGSize(width: 852, height: 393), checkpointIndex: game.furthestPlatformIndex)
+        _ = simulation.launch()
+        for _ in 0..<180 { _ = simulation.advance(delta: 1.0 / 60, steeringTargetX: 420) }
+        simulation.resetToCheckpoint()
+        let checkpoint = simulation.platforms[simulation.furthestPlatformIndex]
+        #expect(simulation.position.x == checkpoint.frame.midX)
+        #expect(simulation.position.y == checkpoint.frame.maxY + WordLeapSimulation.footOffset)
+        #expect(simulation.isWaitingForLaunch)
+        let resized = WordLeapSimulation(words: simulation.platforms.map(\.word),
+            viewport: CGSize(width: 852, height: 393), checkpointIndex: simulation.furthestPlatformIndex)
         #expect(resized.position.x == resized.platforms[resized.furthestPlatformIndex].frame.midX)
         #expect(resized.isWaitingForLaunch)
     }
@@ -115,18 +115,18 @@ struct WordLeapSimulationTests {
                      CGSize(width: 1024, height: 1366)] {
             for book in books {
                 let words = book.spanishPassages.flatMap(SpanishWordTokenizer.platformTokens)
-                var game = WordLeapSimulation(words: words, viewport: size)
-                _ = game.launch()
-                for platform in game.platforms {
+                var simulation = WordLeapSimulation(words: words, viewport: size)
+                _ = simulation.launch()
+                for platform in simulation.platforms {
                     #expect(platform.frame.minX >= 0 && platform.frame.maxX <= size.width)
                 }
-                for destination in game.platforms.dropFirst() {
+                for destination in simulation.platforms.dropFirst() {
                     // Allow a human reaction delay at the beginning of each jump.
                     var landed: Int?
                     for frame in 0..<(fps * 2) {
                         let target = Double(frame) / Double(fps) < Double(WordLeapSimulation.steeringGracePeriod)
                             ? nil : destination.frame.midX
-                        if let index = game.advance(delta: 1.0 / Double(fps), steeringTargetX: target) {
+                        if let index = simulation.advance(delta: 1.0 / Double(fps), steeringTargetX: target) {
                             landed = index
                             break
                         }
@@ -134,12 +134,12 @@ struct WordLeapSimulationTests {
                     try #require(landed == destination.index,
                         "Unreachable word \(destination.index) in \(book.id), \(size), \(fps) fps")
                 }
-                #expect(game.furthestPlatformIndex == words.count - 1)
-                #expect(game.coins.count == min(30, words.count))
-                #expect(game.collectedCoins.count >= min(25, words.count),
+                #expect(simulation.furthestPlatformIndex == words.count - 1)
+                #expect(simulation.coins.count == min(30, words.count))
+                #expect(simulation.collectedCoins.count >= min(25, words.count),
                     "Too few coins on the playable route in \(book.id)")
-                #expect(game.isWaitingForLaunch)
-                let diedAfterCompletion = game.detectFall(below: game.position.y + 1)
+                #expect(simulation.isWaitingForLaunch)
+                let diedAfterCompletion = simulation.detectFall(below: simulation.position.y + 1)
                 #expect(!diedAfterCompletion)
             }
         }

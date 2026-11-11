@@ -10,10 +10,10 @@ struct SettingsFeatureTests {
         defer { defaults.removePersistentDomain(forName: suiteName) }
         defaults.set(WordLeapTheme.forest.rawValue, forKey: "selectedWordLeapTheme")
 
-        let feature = SettingsFeature(defaults: defaults)
-        #expect(feature.selectedTheme == .forest)
+        let settingsFeature = SettingsFeature(defaults: defaults)
+        #expect(settingsFeature.selectedTheme == .forest)
 
-        feature.selectTheme(.ocean)
+        settingsFeature.selectTheme(.ocean)
         #expect(SettingsFeature(defaults: defaults).selectedTheme == .ocean)
 
         defaults.set("retired-theme", forKey: "selectedWordLeapTheme")

@@ -19,13 +19,13 @@ struct BinaryStoryLibraryTests {
         let covers = try JSONDecoder().decode([String: StoryBookCover].self,
             from: resource("metadata", "json"))
         let original = try CuentivaBookRepository.decode(resource("stories", "txt"), covers: covers)
-        let library = try BinaryStoryLibrary(data: resource("Library", "dat"))
-        let compiled = try library.books()
-        #expect(library.bookCount == 52)
+        let binaryLibrary = try BinaryStoryLibrary(data: resource("Library", "dat"))
+        let compiled = try binaryLibrary.books()
+        #expect(binaryLibrary.bookCount == 52)
         #expect(compiled == original)
         #expect(compiled.map(\.platformCount) == original.map(\.platformCount))
-        #expect(throws: CocoaError.self) { try library.book(at: -1) }
-        #expect(throws: CocoaError.self) { try library.book(at: library.bookCount) }
+        #expect(throws: CocoaError.self) { try binaryLibrary.book(at: -1) }
+        #expect(throws: CocoaError.self) { try binaryLibrary.book(at: binaryLibrary.bookCount) }
     }
 
     @Test(arguments: [0, 7, 15, 16, 167])

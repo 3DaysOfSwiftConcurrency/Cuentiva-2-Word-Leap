@@ -6,24 +6,24 @@ struct AdventureRunFeatureTests {
     @Test func nextLevelKeepsRunTotalsButFreshAdventureResetsThem() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        let feature = fixture.game
-        await fixture.library.load().value
-        let first = try #require(fixture.library.books.first)
-        let second = try #require(fixture.library.books.first { $0.id == "two" })
-        await feature.start(book: first).value
-        let plan = try #require(feature.activeLevel)
-        for index in plan.words.indices { feature.recordLanding(at: index) }
-        let firstWordCount = feature.runStatistics.wordsCollected
-        feature.recordRunProgress(doubloons: 3, activeSeconds: 75)
-        await feature.start(book: second, continuingRun: true).value
-        feature.recordLanding(at: 0)
-        feature.recordRunProgress(doubloons: 2, activeSeconds: 10)
-        #expect(feature.runStatistics.wordsCollected == firstWordCount + 1)
-        #expect(feature.runStatistics.doubloonsCollected == 5)
-        #expect(feature.runStatistics.activeSeconds == 85)
-        feature.endLevel()
-        await feature.start(book: first).value
-        #expect(feature.runStatistics.wordsCollected == 0)
-        #expect(feature.runStatistics.activeSeconds == 0)
+        let wordLeapFeature = fixture.wordLeapFeature
+        await fixture.libraryFeature.load().value
+        let first = try #require(fixture.libraryFeature.books.first)
+        let second = try #require(fixture.libraryFeature.books.first { $0.id == "two" })
+        await wordLeapFeature.start(book: first).value
+        let plan = try #require(wordLeapFeature.activeLevel)
+        for index in plan.words.indices { wordLeapFeature.recordLanding(at: index) }
+        let firstWordCount = wordLeapFeature.runStatistics.wordsCollected
+        wordLeapFeature.recordRunProgress(doubloons: 3, activeSeconds: 75)
+        await wordLeapFeature.start(book: second, continuingRun: true).value
+        wordLeapFeature.recordLanding(at: 0)
+        wordLeapFeature.recordRunProgress(doubloons: 2, activeSeconds: 10)
+        #expect(wordLeapFeature.runStatistics.wordsCollected == firstWordCount + 1)
+        #expect(wordLeapFeature.runStatistics.doubloonsCollected == 5)
+        #expect(wordLeapFeature.runStatistics.activeSeconds == 85)
+        wordLeapFeature.endLevel()
+        await wordLeapFeature.start(book: first).value
+        #expect(wordLeapFeature.runStatistics.wordsCollected == 0)
+        #expect(wordLeapFeature.runStatistics.activeSeconds == 0)
     }
 }

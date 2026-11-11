@@ -7,10 +7,10 @@ import Testing
 final class AdventureTestFixture {
     let directory: URL
     let suiteName: String
-    let repository: CuentivaBookRepository
-    let progress: LevelProgressStore
-    let library: LibraryFeature
-    let game: WordLeapFeature
+    let bookRepository: CuentivaBookRepository
+    let levelProgressStore: LevelProgressStore
+    let libraryFeature: LibraryFeature
+    let wordLeapFeature: WordLeapFeature
 
     init() throws {
         directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -27,10 +27,19 @@ final class AdventureTestFixture {
         let source = try #require(bundle.url(forResource: "AdventureLibrary", withExtension: "dat"))
         let url = directory.appendingPathComponent("Library.dat")
         try FileManager.default.copyItem(at: source, to: url)
-        repository = CuentivaBookRepository(networkingManager: NetworkingManager(), bundledLibraryURL: url)
-        progress = LevelProgressStore(defaults: defaults)
-        library = LibraryFeature(bookRepository: repository, levelProgressStore: progress)
-        game = WordLeapFeature(levelPlanBuilder: LevelPlanBuilder(vocabularyURL: nil), libraryFeature: library)
+        bookRepository = CuentivaBookRepository(
+            networkingManager: NetworkingManager(),
+            bundledLibraryURL: url
+        )
+        levelProgressStore = LevelProgressStore(defaults: defaults)
+        libraryFeature = LibraryFeature(
+            bookRepository: bookRepository,
+            levelProgressStore: levelProgressStore
+        )
+        wordLeapFeature = WordLeapFeature(
+            levelPlanBuilder: LevelPlanBuilder(vocabularyURL: nil),
+            libraryFeature: libraryFeature
+        )
     }
 
     func cleanUp() throws {

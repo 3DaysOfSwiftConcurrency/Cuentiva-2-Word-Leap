@@ -20,9 +20,9 @@ struct LibraryViewModelTests {
     @Test func firstReadyPresentationIncludesSavedLocksAndBalance() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        await fixture.progress.recordCompletion(of: "one")
-        _ = await fixture.progress.addDoubloons(12)
-        let viewModel = LibraryViewModel(libraryFeature: fixture.library)
+        await fixture.levelProgressStore.recordCompletion(of: "one")
+        _ = await fixture.levelProgressStore.addDoubloons(12)
+        let viewModel = LibraryViewModel(libraryFeature: fixture.libraryFeature)
         #expect(!viewModel.isReady)
         #expect(viewModel.books.isEmpty)
         await viewModel.load().value
@@ -53,7 +53,7 @@ struct LibraryViewModelTests {
         let url = fixture.directory.appendingPathComponent("Library.dat")
         let validData = try Data(contentsOf: url)
         try Data("invalid library".utf8).write(to: url)
-        let viewModel = LibraryViewModel(libraryFeature: fixture.library)
+        let viewModel = LibraryViewModel(libraryFeature: fixture.libraryFeature)
         await viewModel.load().value
         #expect(!viewModel.isReady)
         #expect(viewModel.books.isEmpty)
@@ -70,12 +70,15 @@ struct LibraryViewModelTests {
     @Test func failedRemoteRefreshKeepsTheBundledLibraryPlayable() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        let repository = CuentivaBookRepository(
+        let bookRepository = CuentivaBookRepository(
             networkingManager: NetworkingManager { _ in throw URLError(.notConnectedToInternet) },
             bundledLibraryURL: fixture.directory.appendingPathComponent("Library.dat")
         )
-        let library = LibraryFeature(bookRepository: repository, levelProgressStore: fixture.progress)
-        let viewModel = LibraryViewModel(libraryFeature: library)
+        let libraryFeature = LibraryFeature(
+            bookRepository: bookRepository,
+            levelProgressStore: fixture.levelProgressStore
+        )
+        let viewModel = LibraryViewModel(libraryFeature: libraryFeature)
 
         await viewModel.load().value
         let bundledBookIDs = viewModel.books.map(\.id)
@@ -91,14 +94,14 @@ struct LibraryViewModelTests {
     @Test func balanceLoadsSavedTreasureAndReflectsNewGameplayCredits() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        _ = await fixture.progress.addDoubloons(1)
-        let viewModel = LibraryViewModel(libraryFeature: fixture.library)
+        _ = await fixture.levelProgressStore.addDoubloons(1)
+        let viewModel = LibraryViewModel(libraryFeature: fixture.libraryFeature)
         await viewModel.load().value
         #expect(viewModel.doubloonBalance == 1)
         #expect(viewModel.doubloonAccessibilityLabel == "1 doubloon")
         let first = try #require(viewModel.books.first)
-        await fixture.game.start(book: first).value
-        await fixture.game.recordCollectedDoubloons(2)?.value
+        await fixture.wordLeapFeature.start(book: first).value
+        await fixture.wordLeapFeature.recordCollectedDoubloons(2)?.value
         #expect(viewModel.doubloonBalance == 3)
         #expect(viewModel.doubloonAccessibilityLabel == "3 doubloons")
     }
@@ -106,7 +109,7 @@ struct LibraryViewModelTests {
     @Test func mapSelectionHonoursLocksAndReflectsCompletion() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        let viewModel = LibraryViewModel(libraryFeature: fixture.library)
+        let viewModel = LibraryViewModel(libraryFeature: fixture.libraryFeature)
         #expect(viewModel.castles.isEmpty)
         #expect(viewModel.selectedBook == nil)
         await viewModel.load().value
@@ -117,7 +120,7 @@ struct LibraryViewModelTests {
         viewModel.select(first)
         #expect(viewModel.selectedBook?.id == "one")
         viewModel.selectedBook = nil
-        await fixture.library.recordCompletion(of: first.id)
+        await fixture.libraryFeature.recordCompletion(of: first.id)
         #expect(viewModel.conqueredCount == 1)
         #expect(viewModel.castles.map(\.number) == [1, 2, 3])
         viewModel.select(second)
@@ -127,8 +130,8 @@ struct LibraryViewModelTests {
     @Test func mapDoesNotCountCompletionsForRemovedBooks() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        await fixture.progress.recordCompletion(of: "removed")
-        let viewModel = LibraryViewModel(libraryFeature: fixture.library)
+        await fixture.levelProgressStore.recordCompletion(of: "removed")
+        let viewModel = LibraryViewModel(libraryFeature: fixture.libraryFeature)
         await viewModel.load().value
         #expect(viewModel.conqueredCount == 0)
         #expect(viewModel.castles.map(\.isUnlocked) == [true, false, false])

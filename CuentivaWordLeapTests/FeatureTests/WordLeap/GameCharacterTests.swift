@@ -40,9 +40,9 @@ struct GameCharacterTests {
     @MainActor @Test func featureExposesProfilesWithoutStartingAnAdventure() throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        let feature = fixture.game
-        #expect(feature.characterProfiles == GameCharacter.cuentivaCast)
-        #expect(feature.activeLevel == nil)
+        let wordLeapFeature = fixture.wordLeapFeature
+        #expect(wordLeapFeature.characterProfiles == GameCharacter.cuentivaCast)
+        #expect(wordLeapFeature.activeLevel == nil)
     }
 
     #if canImport(UIKit)

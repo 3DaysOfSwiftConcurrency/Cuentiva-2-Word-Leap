@@ -7,14 +7,14 @@ struct GameViewModelTests {
     @Test func aChangedBookRequestBuildsOnlyTheLatestScene() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        await fixture.library.load().value
-        await fixture.library.recordCompletion(of: "one")
-        let firstBook = try #require(fixture.library.books.first { $0.id == "one" })
-        let secondBook = try #require(fixture.library.books.first { $0.id == "two" })
+        await fixture.libraryFeature.load().value
+        await fixture.libraryFeature.recordCompletion(of: "one")
+        let firstBook = try #require(fixture.libraryFeature.books.first { $0.id == "one" })
+        let secondBook = try #require(fixture.libraryFeature.books.first { $0.id == "two" })
         let viewModel = GameViewModel(
             book: firstBook,
-            wordLeapFeature: fixture.game,
-            libraryFeature: fixture.library
+            wordLeapFeature: fixture.wordLeapFeature,
+            libraryFeature: fixture.libraryFeature
         )
 
         let firstPreparation = viewModel.prepare(firstBook)
@@ -30,12 +30,12 @@ struct GameViewModelTests {
     @Test func lockedCastleShowsAnErrorWithoutCreatingAScene() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        await fixture.library.load().value
-        let second = try #require(fixture.library.books.first { $0.id == "two" })
+        await fixture.libraryFeature.load().value
+        let second = try #require(fixture.libraryFeature.books.first { $0.id == "two" })
         let viewModel = GameViewModel(
             book: second,
-            wordLeapFeature: fixture.game,
-            libraryFeature: fixture.library
+            wordLeapFeature: fixture.wordLeapFeature,
+            libraryFeature: fixture.libraryFeature
         )
         await viewModel.prepare(second).value
         #expect(viewModel.scene == nil)
@@ -46,7 +46,7 @@ struct GameViewModelTests {
     @Test func removedBookShowsPresentationCopyWithoutCreatingAScene() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        await fixture.library.load().value
+        await fixture.libraryFeature.load().value
         let removedBook = StoryBook(
             id: "removed",
             storyteller: "Pipa",
@@ -56,8 +56,8 @@ struct GameViewModelTests {
         )
         let viewModel = GameViewModel(
             book: removedBook,
-            wordLeapFeature: fixture.game,
-            libraryFeature: fixture.library
+            wordLeapFeature: fixture.wordLeapFeature,
+            libraryFeature: fixture.libraryFeature
         )
         #expect(viewModel.platformProgress == "0 / 1 platform")
 
@@ -71,11 +71,15 @@ struct GameViewModelTests {
     @Test func deathPresentsStatsAndCheckpointRetryKeepsThem() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        let feature = fixture.game
-        let library = fixture.library
-        await library.load().value
-        let book = try #require(library.books.first)
-        let viewModel = GameViewModel(book: book, wordLeapFeature: feature, libraryFeature: library)
+        let wordLeapFeature = fixture.wordLeapFeature
+        let libraryFeature = fixture.libraryFeature
+        await libraryFeature.load().value
+        let book = try #require(libraryFeature.books.first)
+        let viewModel = GameViewModel(
+            book: book,
+            wordLeapFeature: wordLeapFeature,
+            libraryFeature: libraryFeature
+        )
         await viewModel.prepare(book, reduceMotion: true).value
         viewModel.recordLanding(at: 0, word: "Pipa")
         viewModel.showDeath(collectedDoubloons: 4, activeSeconds: 125)
@@ -98,24 +102,24 @@ struct GameViewModelTests {
         #expect(extremeTime != "—")
         viewModel.retry()
         #expect(!viewModel.isDeathPresented)
-        #expect(feature.runStatistics.doubloonsCollected == 4)
+        #expect(wordLeapFeature.runStatistics.doubloonsCollected == 4)
         await viewModel.prepare(book).value
-        #expect(feature.runStatistics.wordsCollected == 0)
-        #expect(feature.runStatistics.activeSeconds == 0)
+        #expect(wordLeapFeature.runStatistics.wordsCollected == 0)
+        #expect(wordLeapFeature.runStatistics.activeSeconds == 0)
         viewModel.leaveLevel()
         #expect(viewModel.scene == nil)
-        #expect(feature.activeLevel == nil)
+        #expect(wordLeapFeature.activeLevel == nil)
     }
 
     @Test func nextLevelReturnsItsPreparationAndContinuesTheAdventure() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        await fixture.library.load().value
-        let firstBook = try #require(fixture.library.books.first)
+        await fixture.libraryFeature.load().value
+        let firstBook = try #require(fixture.libraryFeature.books.first)
         let viewModel = GameViewModel(
             book: firstBook,
-            wordLeapFeature: fixture.game,
-            libraryFeature: fixture.library
+            wordLeapFeature: fixture.wordLeapFeature,
+            libraryFeature: fixture.libraryFeature
         )
         await viewModel.prepare().value
         let firstPlan = try #require(viewModel.activeLevel)
@@ -128,7 +132,7 @@ struct GameViewModelTests {
 
         #expect(viewModel.currentBook.id == "two")
         #expect(viewModel.scene != nil)
-        #expect(fixture.game.runStatistics.levelsCompleted == 1)
+        #expect(fixture.wordLeapFeature.runStatistics.levelsCompleted == 1)
         viewModel.leaveLevel()
     }
 }
