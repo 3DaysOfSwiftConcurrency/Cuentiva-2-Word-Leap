@@ -9,7 +9,7 @@ header, so invalid downloaded content cannot replace the playable bundled catalo
 `LibraryViewModelTests` checks that readiness includes saved locks and balance,
 revisits stay ready, a corrupt library can recover through retry, and a failed
 remote refresh preserves the playable bundled catalogue. `AppModelTests`
-checks that the launch signal starts loading once. Launch visuals still need an iOS check.
+checks that concurrent launch signals join one ready library result. Launch visuals still need an iOS check.
 See `../Library-startup.md` for regeneration and stale-asset checks.
 
 `LibraryFeatureTests` also pauses a remote refresh behind a controlled gate and
@@ -21,7 +21,7 @@ safe fallback from an obsolete stored theme. `ThemeManagerTests` verifies that
 the presentation palette reads and writes the Feature-owned selection rather
 than owning a second persistence path. `SettingsViewModelTests` verifies that the
 screen routes theme selection through that Feature while keeping About copy and
-injected app-identity presentation at the ViewModel boundary.
+formatting Feature-supplied app identity at the ViewModel boundary.
 
 Persistent treasure coverage: `DoubloonBalanceTests` checks duplicate/lower reports,
 checkpoint-safe crediting, leaving during a save, fresh replay earnings, invalid counts,
@@ -30,13 +30,14 @@ without changing completed castles. `LibraryViewModelTests` checks saved-balance
 and live gameplay updates. The HUD and transparent pinned header still need iOS visual checks.
 
 `FeatureTests/Library/LibraryFeatureTests.swift` checks numbered access for all
-52 castles, one-at-a-time unlocks, rejection of direct locked-castle completion, saved progress restoration, completed-book
+52 castles, one-at-a-time unlocks, FIFO completion commands, rejection of direct locked-castle completion, saved progress restoration, completed-book
 replays (including legacy out-of-order completions), unavailable catalogues and
 unknown IDs. `CastleAccessTests` checks gameplay denial, partial progress,
 completion-save ordering before Next level, cancellation, and canonical book
 content. `WordLeapFeatureTests` verifies that duplicate, skipped and final-only
-landing reports cannot complete a level. `LibraryViewModelTests` checks disabled
-selection and live map updates.
+landing reports cannot complete a level and that rescue receives only the Feature's
+semantic completion outcome. `LibraryFeatureTests` also checks fresh-feature refresh
+readiness. `LibraryViewModelTests` checks disabled selection and live map updates.
 These run in the macOS package with production LibraryFeature, AppModel and
 LibraryViewModel sources; tests inject their own graph and never use AppModel.shared.
 

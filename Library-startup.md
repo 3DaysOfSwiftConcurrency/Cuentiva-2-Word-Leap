@@ -2,8 +2,8 @@
 
 Adventure keeps one WorldBackdrop in place while preparing its first presentation.
 There is no launch spinner, separate loading screen, empty castle map or visible
-zero-balance placeholder. The app delegate signals AppModel synchronously at launch;
-AppModel asks LibraryFeature to begin loading without blocking the interface. The
+zero-balance placeholder. The app delegate creates the launch Task from its synchronous
+callback; AppModel awaits LibraryFeature's shared load while the callback returns immediately. The
 Adventure screen joins that same Feature-owned task when needed. LibraryFeature concurrently reads the local catalogue,
 completed-castle IDs and doubloon balance. It publishes those values together on
 the main actor before setting isReady. LibraryViewModel exposes that readiness;
@@ -96,7 +96,9 @@ is unchanged. Manual pull-to-refresh still retrieves the editorial manuscript
 and updates the in-memory catalogue only after the complete manuscript validates.
 Incomplete books, duplicate IDs and orphan passage content are rejected, leaving
 the playable bundled catalogue intact. A pending remote refresh does not block entry
-to a castle from that current catalogue. This does not add downloaded-file persistence
+to a castle from that current catalogue. A refresh requested on a fresh feature first
+establishes the bundled ready state, so callers do not depend on the Adventure screen
+having loaded it beforehand. This does not add downloaded-file persistence
 or background catalogue updates. Remote manuscript input is capped at 5 MB and its
 required header fields are trimmed and validated before publication.
 

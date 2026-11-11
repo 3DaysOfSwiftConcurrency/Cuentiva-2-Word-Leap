@@ -43,7 +43,9 @@ used rather than trusting a supplied book's contents. New completion commands ar
 accepted only for the currently unlocked progression; previously saved out-of-order
 completion remains readable for compatibility. Completion is saved before
 publication. Its retained completion task outlives leaving the game and is awaited
-by the next start request. Existing progress refreshes merge monotonically so
+by the next start request. Distinct completion commands execute FIFO across their
+persistence suspension, so a later valid unlock is not lost while its predecessor saves.
+Existing progress refreshes merge monotonically so
 an older read cannot remove a newly published completion.
 
 LibraryViewModel owns selection and prepares each castle's display and accessibility
