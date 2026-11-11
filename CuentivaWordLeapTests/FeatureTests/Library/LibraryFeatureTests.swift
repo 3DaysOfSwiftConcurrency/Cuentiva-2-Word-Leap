@@ -215,16 +215,37 @@ struct LibraryFeatureTests {
     @Test func distinctCompletionCommandsExecuteInAdmissionOrder() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
-        await fixture.libraryFeature.load().value
+        let controlledProgressStore = ControlledLevelProgressStore(blockedBookID: "one")
+        let libraryFeature = LibraryFeature(
+            bookRepository: fixture.bookRepository,
+            levelProgressStore: controlledProgressStore
+        )
+        await libraryFeature.load().value
+        let barrierWatchdog = Task {
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            await controlledProgressStore.releaseBlockedCommand()
+        }
+        defer { barrierWatchdog.cancel() }
 
-        let firstCompletion = fixture.libraryFeature.recordCompletion(of: "one")
-        let secondCompletion = fixture.libraryFeature.recordCompletion(of: "two")
+        let firstCompletion = libraryFeature.recordCompletion(of: "one")
+        await controlledProgressStore.waitUntilBlockedCommandIsAdmitted()
+        let secondCompletion = libraryFeature.recordCompletion(of: "two")
+        let requestsWhileFirstIsSuspended = await controlledProgressStore.completionRequests
+        #expect(requestsWhileFirstIsSuspended == ["one"])
+
+        await controlledProgressStore.releaseBlockedCommand()
         await firstCompletion.value
         await secondCompletion.value
 
-        #expect(fixture.libraryFeature.completedBookIDs == ["one", "two"])
-        #expect(fixture.libraryFeature.castles.map(\.isUnlocked) == [true, true, true])
-        #expect(await fixture.levelProgressStore.completedBookIDs() == ["one", "two"])
+        let savedBookIDs = await controlledProgressStore.completedBookIDs()
+        let completionRequests = await controlledProgressStore.completionRequests
+        let savedCompletionOrder = await controlledProgressStore.savedCompletionOrder
+        #expect(libraryFeature.completedBookIDs == ["one", "two"])
+        #expect(libraryFeature.castles.map(\.isUnlocked) == [true, true, true])
+        #expect(savedBookIDs == ["one", "two"])
+        #expect(completionRequests == ["one", "two"])
+        #expect(savedCompletionOrder == ["one", "two"])
     }
 
     @Test func previouslyCompletedOutOfOrderCastlesRemainReplayable() async throws {
@@ -289,6 +310,56 @@ private func completeRemoteManuscript() -> Data {
     @three|Mora|Tres remoto|Remote Three|A1
     Mira.|Look.
     """.utf8)
+}
+
+private actor ControlledLevelProgressStore: LevelProgressStoring {
+    private let blockedBookID: String
+    private var savedCompletedBookIDs: Set<String> = []
+    private var savedDoubloonBalance = 0
+    private var blockedCommandContinuation: CheckedContinuation<Void, Never>?
+    private var admissionWaiters: [CheckedContinuation<Void, Never>] = []
+    private var isBlockedCommandReleased = false
+    private(set) var completionRequests: [String] = []
+    private(set) var savedCompletionOrder: [String] = []
+
+    init(blockedBookID: String) {
+        self.blockedBookID = blockedBookID
+    }
+
+    func completedBookIDs() -> Set<String> { savedCompletedBookIDs }
+
+    func recordCompletion(of bookID: String) async {
+        completionRequests.append(bookID)
+        if bookID == blockedBookID, !isBlockedCommandReleased {
+            let waiters = admissionWaiters
+            admissionWaiters.removeAll()
+            for waiter in waiters { waiter.resume() }
+            await withCheckedContinuation { blockedCommandContinuation = $0 }
+        }
+        savedCompletionOrder.append(bookID)
+        savedCompletedBookIDs.insert(bookID)
+    }
+
+    func doubloonBalance() -> Int { savedDoubloonBalance }
+
+    func addDoubloons(_ earnedDoubloons: Int) -> Int {
+        savedDoubloonBalance += max(0, earnedDoubloons)
+        return savedDoubloonBalance
+    }
+
+    func waitUntilBlockedCommandIsAdmitted() async {
+        guard !completionRequests.contains(blockedBookID) else { return }
+        await withCheckedContinuation { admissionWaiters.append($0) }
+    }
+
+    func releaseBlockedCommand() {
+        isBlockedCommandReleased = true
+        blockedCommandContinuation?.resume()
+        blockedCommandContinuation = nil
+        let waiters = admissionWaiters
+        admissionWaiters.removeAll()
+        for waiter in waiters { waiter.resume() }
+    }
 }
 
 @MainActor

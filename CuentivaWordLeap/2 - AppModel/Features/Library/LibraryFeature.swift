@@ -4,7 +4,7 @@ import Observation
 @MainActor @Observable
 final class LibraryFeature {
     private let bookRepository: CuentivaBookRepository
-    private let levelProgressStore: LevelProgressStore
+    private let levelProgressStore: any LevelProgressStoring
     private(set) var books: [StoryBook] = []
     private(set) var completedBookIDs: Set<String> = []
     private(set) var doubloonBalance = 0
@@ -18,7 +18,7 @@ final class LibraryFeature {
     private var loadingRevision = 0
     private var completionSaveRevision = 0
 
-    init(bookRepository: CuentivaBookRepository, levelProgressStore: LevelProgressStore) {
+    init(bookRepository: CuentivaBookRepository, levelProgressStore: any LevelProgressStoring) {
         self.bookRepository = bookRepository
         self.levelProgressStore = levelProgressStore
     }
@@ -149,7 +149,7 @@ final class LibraryFeature {
 
     private func loadBooks(
         from repository: CuentivaBookRepository,
-        levelProgressStore: LevelProgressStore
+        levelProgressStore: any LevelProgressStoring
     ) async {
         do {
             async let catalogueRequest = repository.books()
@@ -172,7 +172,7 @@ final class LibraryFeature {
 
     private func refreshBooks(
         from repository: CuentivaBookRepository,
-        levelProgressStore: LevelProgressStore
+        levelProgressStore: any LevelProgressStoring
     ) async {
         await refreshDoubloonBalance()
         do {

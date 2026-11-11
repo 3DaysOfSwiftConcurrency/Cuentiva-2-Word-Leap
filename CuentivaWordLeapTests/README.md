@@ -44,6 +44,8 @@ semantic completion outcome. `LibraryFeatureTests` also checks fresh-feature ref
 readiness. `LibraryViewModelTests` checks disabled selection and live map updates.
 These run in the macOS package with production LibraryFeature, AppModel and
 LibraryViewModel sources; tests inject their own graph and never use AppModel.shared.
+The FIFO test suspends the first persistence command and proves the second does
+not reach storage until the first resumes and finishes.
 
 `Support/AdventureTestFixture.swift` copies a three-book binary into a separate temporary directory and creates a
 UserDefaults suite for every test. The existing completion key and data format

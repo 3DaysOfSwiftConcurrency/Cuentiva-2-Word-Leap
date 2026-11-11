@@ -1,7 +1,14 @@
 import Foundation
 
+protocol LevelProgressStoring: Actor {
+    func completedBookIDs() async -> Set<String>
+    func recordCompletion(of bookID: String) async
+    func doubloonBalance() async -> Int
+    func addDoubloons(_ earnedDoubloons: Int) async -> Int
+}
+
 /// The local source of truth for completed story worlds and collected treasure.
-actor LevelProgressStore {
+actor LevelProgressStore: LevelProgressStoring {
     private let completedBookIDsKey = "completedWordLeapBookIDs"
     private let doubloonBalanceKey = "wordLeapDoubloonBalance"
     private let defaults: UserDefaults
