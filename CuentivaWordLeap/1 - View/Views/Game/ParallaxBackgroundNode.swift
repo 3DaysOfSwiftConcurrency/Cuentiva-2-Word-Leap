@@ -2,6 +2,13 @@ import SpriteKit
 import Foundation
 import CoreGraphics
 
+private enum ParallaxParticlePalette {
+    static let starlight = SKColor(red: 1, green: 0.85, blue: 0.42, alpha: 1)
+    static let fireflyGlow = SKColor(red: 0.85, green: 1, blue: 0.45, alpha: 1)
+    static let pollenGlow = SKColor(red: 1, green: 0.9, blue: 0.65, alpha: 0.65)
+    static let mist = SKColor(white: 0.9, alpha: 0.3)
+}
+
 /// Owns a bounded set of decorative sprites, attached to the gameplay camera.
 /// It has no physics bodies and receives altitude rather than moving the camera.
 final class ParallaxBackgroundNode: SKNode {
@@ -109,14 +116,14 @@ final class ParallaxBackgroundNode: SKNode {
             }
             switch recipe.particles {
             case .stars:
-                star.fillColor = SKColor(red: 1, green: 0.85, blue: 0.42, alpha: 1)
+                star.fillColor = ParallaxParticlePalette.starlight
             case .fireflies:
-                star.fillColor = SKColor(red: 0.85, green: 1, blue: 0.45, alpha: 1)
+                star.fillColor = ParallaxParticlePalette.fireflyGlow
                 star.glowWidth = 2
             case .pollen:
-                star.fillColor = SKColor(red: 1, green: 0.9, blue: 0.65, alpha: 0.65)
+                star.fillColor = ParallaxParticlePalette.pollenGlow
             case .mist:
-                star.fillColor = SKColor(white: 0.9, alpha: 0.3)
+                star.fillColor = ParallaxParticlePalette.mist
             }
             star.strokeColor = .clear
             let x = (CGFloat((index * 37 + 11) % 101) / 100 - 0.5) * viewport.width

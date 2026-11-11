@@ -2,6 +2,13 @@ import SpriteKit
 import UIKit
 import SwiftUI
 
+private enum WordLeapScenePalette {
+    static let nightSky = SKColor(red: 0.03, green: 0.10, blue: 0.26, alpha: 1)
+    static let lagoonPlatform = SKColor(red: 0.04, green: 0.66, blue: 0.67, alpha: 1)
+    static let coralPlatform = SKColor(red: 0.95, green: 0.31, blue: 0.17, alpha: 1)
+    static let fullStopPlatform = SKColor(red: 0.80, green: 0.48, blue: 0.04, alpha: 1)
+}
+
 @MainActor
 final class WordLeapScene: SKScene {
     private let levelPlan: LevelPlan
@@ -48,7 +55,7 @@ final class WordLeapScene: SKScene {
 
     override func didMove(to view: SKView) {
         guard cameraNode.parent == nil else { return }
-        backgroundColor = SKColor(red: 0.03, green: 0.10, blue: 0.26, alpha: 1)
+        backgroundColor = WordLeapScenePalette.nightSky
         addChild(cameraNode)
         camera = cameraNode
         cameraNode.addChild(scenery)
@@ -136,12 +143,12 @@ final class WordLeapScene: SKScene {
 
         let island = SKShapeNode(rect: frame, cornerRadius: 24)
         island.fillColor = index.isMultiple(of: 2)
-            ? SKColor(red: 0.04, green: 0.66, blue: 0.67, alpha: 1)
-            : SKColor(red: 0.95, green: 0.31, blue: 0.17, alpha: 1)
+            ? WordLeapScenePalette.lagoonPlatform
+            : WordLeapScenePalette.coralPlatform
         island.strokeColor = SKColor.white.withAlphaComponent(0.62)
         island.lineWidth = 2
         if word == "." {
-            island.fillColor = SKColor(red: 0.80, green: 0.48, blue: 0.04, alpha: 1)
+            island.fillColor = WordLeapScenePalette.fullStopPlatform
         }
         container.addChild(island)
 
