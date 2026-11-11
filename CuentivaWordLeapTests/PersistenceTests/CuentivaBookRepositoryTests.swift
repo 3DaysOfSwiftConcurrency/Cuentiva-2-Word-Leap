@@ -27,7 +27,8 @@ struct CuentivaBookRepositoryTests {
             "@whitespace-id|   |Un cuento|A Story|Description\nPipa salta. | Pipa jumps.",
             "@duplicate|Pipa|Uno|One|Description\nPipa salta. | Pipa jumps.\n"
                 + "@duplicate|Mora|Dos|Two|Description\nMora mira. | Mora looks.",
-            "A passage without a book. | An orphaned passage."
+            "A passage without a book. | An orphaned passage.",
+            "@no-words|Pipa|Sin palabras|No Words|Description\n!!! | No playable words."
         ]
 
         for manuscript in malformedManuscripts {

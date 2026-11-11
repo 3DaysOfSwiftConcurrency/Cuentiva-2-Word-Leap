@@ -4,8 +4,8 @@ Startup coverage: `BinaryStoryLibraryTests` compares every bundled binary book
 against the manuscript and cover metadata, including order and punctuation. It
 rejects malformed headers, invalid offsets/counts, invalid UTF-8 and duplicate IDs.
 `CuentivaBookRepositoryTests` verifies that remote editorial refreshes reject
-incomplete books, duplicate IDs and passage content without a book header, so
-invalid downloaded content cannot replace the playable bundled catalogue.
+incomplete books, duplicate IDs, unplayable passages and content without a book
+header, so invalid downloaded content cannot replace the playable bundled catalogue.
 `LibraryViewModelTests` checks that readiness includes saved locks and balance,
 revisits stay ready, a corrupt library can recover through retry, and a failed
 remote refresh preserves the playable bundled catalogue. `AppModelTests`

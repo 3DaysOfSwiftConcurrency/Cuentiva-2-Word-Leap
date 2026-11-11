@@ -46,7 +46,7 @@ struct BinaryStoryLibrary: Sendable {
                                   palette: Int(uint(at: base + 88))))
         guard !book.id.isEmpty, !book.title.isEmpty, !book.englishTitle.isEmpty,
               !book.storyteller.isEmpty, !passages.isEmpty,
-              passages.allSatisfy({ !$0.spanish.isEmpty }) else {
+              passages.allSatisfy({ !$0.spanish.isEmpty }), book.platformCount > 0 else {
             throw CocoaError(.fileReadCorruptFile)
         }
         return book

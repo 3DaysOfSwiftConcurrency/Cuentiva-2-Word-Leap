@@ -37,7 +37,8 @@ struct BinaryStoryLibraryTests {
     }
 
     @Test(arguments: ["magic", "version", "count", "stringOffset", "stringLength",
-                      "utf8", "sentenceCount", "requiredSentences", "optionalSentences", "duplicateID"])
+                      "utf8", "sentenceCount", "requiredSentences", "optionalSentences",
+                      "duplicateID", "unplayablePassage"])
     func corruptTablesAreRejectedWithoutReadingOutsideTheFile(fault: String) throws {
         var libraryData = try resource("Library", "dat")
         switch fault {
@@ -57,6 +58,14 @@ struct BinaryStoryLibraryTests {
         case "duplicateID":
             let firstID = libraryData.subdata(in: 16..<24)
             libraryData.replaceSubrange(168..<176, with: firstID)
+        case "unplayablePassage":
+            let sentenceTableOffset = Int(word(at: 16 + 96, in: libraryData))
+            let spanishOffset = Int(word(at: sentenceTableOffset + 8, in: libraryData))
+            let spanishLength = Int(word(at: sentenceTableOffset + 12, in: libraryData))
+            libraryData.replaceSubrange(
+                spanishOffset..<(spanishOffset + spanishLength),
+                with: repeatElement(UInt8(ascii: "!"), count: spanishLength)
+            )
         default: Issue.record("Unexpected corruption case")
         }
         #expect(throws: CocoaError.self) { try BinaryStoryLibrary(data: libraryData).books() }
@@ -65,6 +74,12 @@ struct BinaryStoryLibraryTests {
     private func setWord(_ value: UInt32, at offset: Int, in libraryData: inout Data) {
         for byte in 0..<4 {
             libraryData[offset + byte] = UInt8(truncatingIfNeeded: value >> (byte * 8))
+        }
+    }
+
+    private func word(at offset: Int, in libraryData: Data) -> UInt32 {
+        libraryData.withUnsafeBytes {
+            UInt32(littleEndian: $0.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
         }
     }
 }

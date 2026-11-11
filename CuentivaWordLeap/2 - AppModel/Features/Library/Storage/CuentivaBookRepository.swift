@@ -55,9 +55,13 @@ actor CuentivaBookRepository {
                   !passages.isEmpty, passages.count == translations.count else {
                 throw CocoaError(.fileReadCorruptFile)
             }
-            books.append(StoryBook(id: header.id, storyteller: header.storyteller,
+            let book = StoryBook(id: header.id, storyteller: header.storyteller,
                 title: header.title, englishTitle: header.englishTitle, spanishPassages: passages,
-                englishPassages: translations, cover: covers[header.id] ?? StoryBookCover()))
+                englishPassages: translations, cover: covers[header.id] ?? StoryBookCover())
+            guard book.platformCount > 0 else {
+                throw CocoaError(.fileReadCorruptFile)
+            }
+            books.append(book)
         }
         for line in manuscript.split(whereSeparator: \.isNewline).map(String.init) {
             let trimmedLine = line.trimmingCharacters(in: .whitespaces)
