@@ -85,6 +85,13 @@ struct CastleAccessTests {
             levelPlanBuilder: controlledBuilder,
             libraryFeature: fixture.libraryFeature
         )
+        let barrierWatchdog = Task {
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            await controlledBuilder.release(bookID: first.id)
+            await controlledBuilder.release(bookID: second.id)
+        }
+        defer { barrierWatchdog.cancel() }
 
         let obsoletePreparation = wordLeapFeature.startAdventure(with: first)
         await controlledBuilder.waitUntilRequested(bookID: first.id)
@@ -100,9 +107,17 @@ struct CastleAccessTests {
         await controlledBuilder.release(bookID: second.id)
         await currentPreparation.value
         await joinedCurrentPreparation.value
+        let firstWasReleasedBeforeRequest = await controlledBuilder.wasReleasedBeforeRequest(
+            bookID: first.id
+        )
+        let secondWasReleasedBeforeRequest = await controlledBuilder.wasReleasedBeforeRequest(
+            bookID: second.id
+        )
 
         #expect(wordLeapFeature.activeLevel?.book.id == second.id)
         #expect(wordLeapFeature.preparationFailure == nil)
+        #expect(!firstWasReleasedBeforeRequest)
+        #expect(!secondWasReleasedBeforeRequest)
     }
 }
 
@@ -111,6 +126,7 @@ private actor ControlledLevelPlanBuilder: LevelPlanBuilding {
     private var requestWaiters: [String: [CheckedContinuation<Void, Never>]] = [:]
     private var planWaiters: [String: [CheckedContinuation<Void, Never>]] = [:]
     private var releasedBookIDs: Set<String> = []
+    private var prematurelyReleasedBookIDs: Set<String> = []
 
     func makePlan(for book: StoryBook) async -> LevelPlan {
         requestCounts[book.id, default: 0] += 1
@@ -128,12 +144,21 @@ private actor ControlledLevelPlanBuilder: LevelPlanBuilding {
     }
 
     func release(bookID: String) {
+        if requestCounts[bookID, default: 0] == 0 {
+            prematurelyReleasedBookIDs.insert(bookID)
+        }
         releasedBookIDs.insert(bookID)
+        let arrivalWaiters = requestWaiters.removeValue(forKey: bookID) ?? []
+        for waiter in arrivalWaiters { waiter.resume() }
         let waiters = planWaiters.removeValue(forKey: bookID) ?? []
         for waiter in waiters { waiter.resume() }
     }
 
     func requestCount(for bookID: String) -> Int {
         requestCounts[bookID, default: 0]
+    }
+
+    func wasReleasedBeforeRequest(bookID: String) -> Bool {
+        prematurelyReleasedBookIDs.contains(bookID)
     }
 }

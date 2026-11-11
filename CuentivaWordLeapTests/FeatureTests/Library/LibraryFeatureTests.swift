@@ -17,7 +17,6 @@ struct LibraryFeatureTests {
         await libraryFeature.load().value
 
         let refresh = libraryFeature.refresh()
-        await gate.waitUntilRequested()
         let watchdog = Task {
             try? await Task.sleep(for: .seconds(2))
             guard !Task.isCancelled else { return }
@@ -27,6 +26,7 @@ struct LibraryFeatureTests {
             watchdog.cancel()
             gate.release(with: remoteManuscript)
         }
+        await gate.waitUntilRequested()
 
         let playableBook = try await libraryFeature.bookForPlay(id: "one")
         let refreshHadToBeReleased = gate.hasReleasedResponse
@@ -35,6 +35,8 @@ struct LibraryFeatureTests {
 
         gate.release(with: remoteManuscript)
         await refresh.value
+        #expect(gate.requestCount == 1)
+        #expect(!gate.wasReleasedBeforeRequest)
     }
 
     @Test func cancellingTheOnlyWaiterKeepsTheSharedRefreshAliveWithoutAReplacement() async throws {
@@ -53,8 +55,6 @@ struct LibraryFeatureTests {
         await libraryFeature.load().value
 
         let screenWaiter = Task { await libraryFeature.refresh().value }
-        await gate.waitUntilRequested()
-        screenWaiter.cancel()
         let watchdog = Task {
             try? await Task.sleep(for: .seconds(2))
             guard !Task.isCancelled else { return }
@@ -64,11 +64,14 @@ struct LibraryFeatureTests {
             watchdog.cancel()
             gate.release(with: remoteManuscript)
         }
+        await gate.waitUntilRequested()
+        screenWaiter.cancel()
 
         gate.release(with: remoteManuscript)
         await screenWaiter.value
 
         #expect(gate.requestCount == 1)
+        #expect(!gate.wasReleasedBeforeRequest)
         #expect(libraryFeature.books.map(\.title) == ["Uno remoto", "Dos remoto", "Tres remoto"])
         #expect(libraryFeature.requestFailure == nil)
     }
@@ -88,6 +91,15 @@ struct LibraryFeatureTests {
         await libraryFeature.load().value
 
         let firstWaiter = Task { await libraryFeature.refresh().value }
+        let watchdog = Task {
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            gate.release(with: remoteManuscript)
+        }
+        defer {
+            watchdog.cancel()
+            gate.release(with: remoteManuscript)
+        }
         await gate.waitUntilRequested()
         let laterRefresh = libraryFeature.refresh()
         firstWaiter.cancel()
@@ -96,6 +108,7 @@ struct LibraryFeatureTests {
         await laterRefresh.value
 
         #expect(gate.requestCount == 1)
+        #expect(!gate.wasReleasedBeforeRequest)
         #expect(libraryFeature.books.map(\.title) == ["Uno remoto", "Dos remoto", "Tres remoto"])
         #expect(libraryFeature.requestFailure == nil)
     }
@@ -370,6 +383,7 @@ private final class RemoteManuscriptGate {
     private var releasedData: Data?
     private(set) var hasReleasedResponse = false
     private(set) var requestCount = 0
+    private(set) var wasReleasedBeforeRequest = false
 
     func request() async -> Data {
         requestCount += 1
@@ -389,6 +403,10 @@ private final class RemoteManuscriptGate {
     func release(with data: Data) {
         guard !hasReleasedResponse else { return }
         hasReleasedResponse = true
+        wasReleasedBeforeRequest = !requestStarted
+        let waiters = startedWaiters
+        startedWaiters.removeAll()
+        for waiter in waiters { waiter.resume() }
         if responseContinuations.isEmpty {
             releasedData = data
         } else {
