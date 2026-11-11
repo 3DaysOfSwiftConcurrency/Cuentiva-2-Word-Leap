@@ -1,6 +1,6 @@
 import Foundation
 
-/// Immutable application identity exposed by SettingsFeature for presentation.
+/// Immutable app identity prepared from the bundle for presentation.
 struct AppInformation: Equatable, Sendable {
     let name: String
     let version: String
@@ -18,5 +18,11 @@ struct AppInformation: Equatable, Sendable {
             ?? "App"
         version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
         build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+    }
+
+    static let current = AppInformation(bundle: .main)
+
+    var versionDescription: String {
+        String(localized: "Version \(version) (\(build))")
     }
 }

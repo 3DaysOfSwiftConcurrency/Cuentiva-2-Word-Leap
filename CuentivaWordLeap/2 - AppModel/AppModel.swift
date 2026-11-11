@@ -15,11 +15,11 @@ final class AppModel {
         hasLaunched = false
     }
 
-    /// Joins the shared launch refresh without gating construction of the interface.
-    func applicationDidFinishLaunching() async {
+    /// Signals Feature-owned startup work synchronously without waiting for I/O.
+    func applicationDidFinishLaunching() {
         guard !hasLaunched else { return }
         hasLaunched = true
-        await libraryFeature.load().value
+        libraryFeature.load()
     }
 
     static func live() -> AppModel {
@@ -35,14 +35,10 @@ final class AppModel {
             levelPlanBuilder: levelPlanBuilder,
             libraryFeature: libraryFeature
         )
-        let settingsFeature = SettingsFeature(
-            defaults: .standard,
-            appInformation: AppInformation(bundle: .main)
-        )
         return AppModel(
             libraryFeature: libraryFeature,
             wordLeapFeature: wordLeapFeature,
-            settingsFeature: settingsFeature
+            settingsFeature: SettingsFeature()
         )
     }
 }

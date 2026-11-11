@@ -9,7 +9,7 @@ header, so invalid downloaded content cannot replace the playable bundled catalo
 `LibraryViewModelTests` checks that readiness includes saved locks and balance,
 revisits stay ready, a corrupt library can recover through retry, and a failed
 remote refresh preserves the playable bundled catalogue. `AppModelTests`
-checks that concurrent launch signals join one ready library result. Launch visuals still need an iOS check.
+checks that the launch signal starts loading once. Launch visuals still need an iOS check.
 See `../Library-startup.md` for regeneration and stale-asset checks.
 
 `LibraryFeatureTests` also pauses a remote refresh behind a controlled gate and
@@ -21,7 +21,7 @@ safe fallback from an obsolete stored theme. `ThemeManagerTests` verifies that
 the presentation palette reads and writes the Feature-owned selection rather
 than owning a second persistence path. `SettingsViewModelTests` verifies that the
 screen routes theme selection through that Feature while keeping About copy and
-formatting Feature-supplied app identity at the ViewModel boundary.
+injected app-identity presentation at the ViewModel boundary.
 
 Persistent treasure coverage: `DoubloonBalanceTests` checks duplicate/lower reports,
 checkpoint-safe crediting, leaving during a save, fresh replay earnings, invalid counts,

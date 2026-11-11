@@ -2,8 +2,8 @@
 
 Adventure keeps one WorldBackdrop in place while preparing its first presentation.
 There is no launch spinner, separate loading screen, empty castle map or visible
-zero-balance placeholder. The app delegate creates the launch Task from its synchronous
-callback; AppModel awaits LibraryFeature's shared load while the callback returns immediately. The
+zero-balance placeholder. The app delegate signals AppModel synchronously at launch;
+AppModel asks LibraryFeature to begin loading without blocking the interface. The
 Adventure screen joins that same Feature-owned task when needed. LibraryFeature concurrently reads the local catalogue,
 completed-castle IDs and doubloon balance. It publishes those values together on
 the main actor before setting isReady. LibraryViewModel exposes that readiness;

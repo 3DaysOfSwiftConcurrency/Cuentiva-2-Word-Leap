@@ -4,9 +4,14 @@ import Observation
 @MainActor @Observable
 final class SettingsViewModel {
     private let settingsFeature: SettingsFeature
+    private let appInformation: AppInformation
 
-    init(settingsFeature: SettingsFeature = AppModel.shared.settingsFeature) {
+    init(
+        settingsFeature: SettingsFeature = AppModel.shared.settingsFeature,
+        appInformation: AppInformation = .current
+    ) {
         self.settingsFeature = settingsFeature
+        self.appInformation = appInformation
     }
 
     var selectedTheme: WordLeapTheme {
@@ -19,9 +24,6 @@ final class SettingsViewModel {
     var architecture: String {
         String(localized: "Cooperative Feature Architecture")
     }
-    var appName: String { settingsFeature.appInformation.name }
-    var version: String {
-        let appInformation = settingsFeature.appInformation
-        return String(localized: "Version \(appInformation.version) (\(appInformation.build))")
-    }
+    var appName: String { appInformation.name }
+    var version: String { appInformation.versionDescription }
 }
