@@ -39,6 +39,8 @@ struct GameViewModelTests {
         #expect(viewModel.scene == nil)
         #expect(viewModel.preparationError == "Complete Castle 1 to unlock this adventure.")
         viewModel.leaveLevel()
+        #expect(fixture.wordLeapFeature.preparationFailure == nil)
+        #expect(viewModel.preparationError == nil)
     }
 
     @Test func removedBookShowsPresentationCopyWithoutCreatingAScene() async throws {

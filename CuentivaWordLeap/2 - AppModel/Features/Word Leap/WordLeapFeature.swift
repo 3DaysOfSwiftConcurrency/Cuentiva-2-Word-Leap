@@ -152,6 +152,7 @@ final class WordLeapFeature {
         preparationTask = nil
         preparationRequest = nil
         activeLevel = nil
+        preparationFailure = nil
         landedWordCount = 0
         isLevelComplete = false
     }
