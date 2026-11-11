@@ -32,11 +32,14 @@ actor CuentivaBookRepository {
 
     func refreshFromGitHub() async throws -> [StoryBook] {
         guard let githubStoriesURL else { throw CocoaError(.fileNoSuchFile) }
-        let data = try await networkingManager.data(from: githubStoriesURL)
-        let covers = Dictionary(try books().map { ($0.id, $0.cover) }, uniquingKeysWith: { first, _ in first })
-        let books = try Self.decode(data, covers: covers)
-        cachedBooks = books
-        return books
+        let manuscriptData = try await networkingManager.data(from: githubStoriesURL)
+        let coversByBookID = Dictionary(
+            try books().map { ($0.id, $0.cover) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        let refreshedBooks = try Self.decode(manuscriptData, covers: coversByBookID)
+        cachedBooks = refreshedBooks
+        return refreshedBooks
     }
 
     static func decode(_ manuscriptData: Data, covers: [String: StoryBookCover] = [:]) throws -> [StoryBook] {
