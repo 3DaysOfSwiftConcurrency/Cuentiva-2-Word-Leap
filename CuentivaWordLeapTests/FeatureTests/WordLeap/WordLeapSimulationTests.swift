@@ -29,6 +29,26 @@ struct WordLeapSimulationTests {
         #expect(empty.coins.isEmpty)
     }
 
+    @Test func invalidRestorationValuesFallBackToANewFiniteRun() {
+        var simulation = WordLeapSimulation(
+            words: ["En", "este", "mercado"],
+            viewport: CGSize(width: 420, height: 912),
+            checkpointIndex: -99,
+            activeSeconds: .infinity
+        )
+
+        #expect(simulation.furthestPlatformIndex == -1)
+        #expect(simulation.activeSeconds == 0)
+        #expect(simulation.launch() == 0)
+
+        let negativeTime = WordLeapSimulation(
+            words: ["Hola"],
+            viewport: CGSize(width: 390, height: 844),
+            activeSeconds: -10
+        )
+        #expect(negativeTime.activeSeconds == 0)
+    }
+
     @Test func deathPausesUntilExplicitRetryAndKeepsCheckpoint() throws {
         var simulation = WordLeapSimulation(words: ["En", "este", "mercado"],
             viewport: CGSize(width: 420, height: 912), checkpointIndex: 1)

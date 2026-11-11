@@ -34,7 +34,7 @@ struct WordLeapSimulation {
     init(words: [String], viewport: CGSize, checkpointIndex: Int = -1, collectedCoins: Set<Int> = [],
          activeSeconds: TimeInterval = 0) {
         self.viewport = viewport
-        self.activeSeconds = activeSeconds
+        self.activeSeconds = activeSeconds.isFinite ? max(0, activeSeconds) : 0
         var generated: [WordPlatform] = []
         var previousX = viewport.width / 2
         for (index, word) in words.enumerated() {
@@ -61,7 +61,7 @@ struct WordLeapSimulation {
         }
         coins = placements
         self.collectedCoins = collectedCoins.intersection(placements.keys)
-        furthestPlatformIndex = min(checkpointIndex, generated.count - 1)
+        furthestPlatformIndex = max(-1, min(checkpointIndex, generated.count - 1))
         resetToCheckpoint()
     }
 
