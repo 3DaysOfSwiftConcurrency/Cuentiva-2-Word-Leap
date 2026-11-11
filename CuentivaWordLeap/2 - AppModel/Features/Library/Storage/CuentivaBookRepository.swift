@@ -65,7 +65,9 @@ actor CuentivaBookRepository {
         }
         for line in manuscript.split(whereSeparator: \.isNewline).map(String.init) {
             let trimmedLine = line.trimmingCharacters(in: .whitespaces)
-            if trimmedLine.hasPrefix("@") {
+            if trimmedLine.isEmpty || trimmedLine == "---" {
+                continue
+            } else if trimmedLine.hasPrefix("@") {
                 try finishBook()
                 let fields = trimmedLine.dropFirst()
                     .split(separator: "|", maxSplits: 4, omittingEmptySubsequences: false)
@@ -76,13 +78,17 @@ actor CuentivaBookRepository {
                 header = (fields[0], fields[1], fields[2], fields[3])
                 passages = []
                 translations = []
-            } else if trimmedLine != "---",
-                      let spanish = trimmedLine.split(separator: "|", maxSplits: 1).first?
-                        .trimmingCharacters(in: .whitespaces),
-                      !spanish.isEmpty {
-                guard header != nil else { throw CocoaError(.fileReadCorruptFile) }
+            } else {
+                let parts = trimmedLine.split(
+                    separator: "|",
+                    maxSplits: 1,
+                    omittingEmptySubsequences: false
+                )
+                let spanish = parts[0].trimmingCharacters(in: .whitespaces)
+                guard header != nil, !spanish.isEmpty else {
+                    throw CocoaError(.fileReadCorruptFile)
+                }
                 passages.append(spanish)
-                let parts = trimmedLine.split(separator: "|", maxSplits: 1, omittingEmptySubsequences: false)
                 translations.append(parts.count > 1 ? parts[1].trimmingCharacters(in: .whitespaces) : "")
             }
         }

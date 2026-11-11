@@ -28,7 +28,8 @@ struct CuentivaBookRepositoryTests {
             "@duplicate|Pipa|Uno|One|Description\nPipa salta. | Pipa jumps.\n"
                 + "@duplicate|Mora|Dos|Two|Description\nMora mira. | Mora looks.",
             "A passage without a book. | An orphaned passage.",
-            "@no-words|Pipa|Sin palabras|No Words|Description\n!!! | No playable words."
+            "@no-words|Pipa|Sin palabras|No Words|Description\n!!! | No playable words.",
+            "@missing-spanish|Pipa|Incompleto|Incomplete|Description\nHola. | Hello.\n| English only."
         ]
 
         for manuscript in malformedManuscripts {
