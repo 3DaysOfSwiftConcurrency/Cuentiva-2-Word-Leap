@@ -89,6 +89,27 @@ struct LibraryFeatureTests {
         #expect(fixture.libraryFeature.castles.allSatisfy { !$0.isCompleted })
     }
 
+    @Test func catalogueNavigationUsesCanonicalOrderAndRejectsUnknownBooks() async throws {
+        let fixture = try AdventureTestFixture()
+        defer { try? fixture.cleanUp() }
+        await fixture.libraryFeature.load().value
+        let firstBook = try #require(fixture.libraryFeature.books.first)
+        let secondBook = try #require(fixture.libraryFeature.books.dropFirst().first)
+        let unknownBook = StoryBook(
+            id: "unknown",
+            storyteller: "Pipa",
+            title: "Unknown",
+            englishTitle: "Unknown",
+            spanishPassages: ["Hola"]
+        )
+
+        #expect(fixture.libraryFeature.bookNumber(for: firstBook) == 1)
+        #expect(fixture.libraryFeature.bookNumber(for: secondBook) == 2)
+        #expect(fixture.libraryFeature.nextBook(after: firstBook) == secondBook)
+        #expect(fixture.libraryFeature.bookNumber(for: unknownBook) == nil)
+        #expect(fixture.libraryFeature.nextBook(after: unknownBook) == nil)
+    }
+
     @Test func completionUnlocksOnlyTheNextCastleAndKeepsReplaysOpen() async throws {
         let fixture = try AdventureTestFixture()
         defer { try? fixture.cleanUp() }
