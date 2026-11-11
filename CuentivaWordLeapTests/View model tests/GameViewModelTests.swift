@@ -81,7 +81,11 @@ struct GameViewModelTests {
             libraryFeature: libraryFeature
         )
         await viewModel.prepareAdventure(with: book, reduceMotion: true).value
-        viewModel.recordLanding(at: 0, word: "Pipa")
+        let firstWord = try #require(viewModel.activeLevel?.words.first)
+        viewModel.recordLanding(at: 0)
+        #expect(viewModel.lastReadWord == firstWord)
+        viewModel.recordLanding(at: 99)
+        #expect(viewModel.lastReadWord == firstWord)
         viewModel.showDeath(collectedDoubloons: 4, activeSeconds: 125)
         #expect(viewModel.isDeathPresented)
         #expect(viewModel.gameOverStatistics.first { $0.title == "Time played" }?.displayValue == "2:05")
@@ -124,7 +128,7 @@ struct GameViewModelTests {
         await viewModel.prepareAdventure().value
         let firstPlan = try #require(viewModel.activeLevel)
         for wordIndex in firstPlan.words.indices {
-            viewModel.recordLanding(at: wordIndex, word: firstPlan.words[wordIndex])
+            viewModel.recordLanding(at: wordIndex)
         }
 
         let nextLevelPreparation = try #require(viewModel.startNextLevel())

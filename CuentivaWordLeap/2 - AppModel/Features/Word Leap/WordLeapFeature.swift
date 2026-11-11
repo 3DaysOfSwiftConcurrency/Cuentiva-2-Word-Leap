@@ -67,10 +67,11 @@ final class WordLeapFeature {
         return task
     }
 
-    func recordLanding(at wordIndex: Int) {
+    @discardableResult
+    func recordLanding(at wordIndex: Int) -> Bool {
         guard let activeLevel, !isLevelComplete,
               activeLevel.words.indices.contains(wordIndex),
-              wordIndex == landedWordCount else { return }
+              wordIndex == landedWordCount else { return false }
         runStatistics.recordLanding(in: activeLevel, at: wordIndex)
         landedWordCount += 1
         isLevelComplete = landedWordCount == activeLevel.words.count
@@ -88,6 +89,7 @@ final class WordLeapFeature {
             }
             completionTask = task
         }
+        return true
     }
 
     func recordRunProgress(doubloons: Int, activeSeconds: Double) {

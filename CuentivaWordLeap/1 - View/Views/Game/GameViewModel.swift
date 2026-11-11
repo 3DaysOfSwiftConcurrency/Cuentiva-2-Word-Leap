@@ -170,9 +170,9 @@ final class GameViewModel {
                     guard let self, activeSceneID == sceneID else { return }
                     showDeath(collectedDoubloons: collectedDoubloons, activeSeconds: activeSeconds)
                 },
-                reportLanding: { [weak self] wordIndex, word in
+                reportLanding: { [weak self] wordIndex in
                     guard let self, activeSceneID == sceneID else { return }
-                    recordLanding(at: wordIndex, word: word)
+                    recordLanding(at: wordIndex)
                 })
         }
         preparationTask = task
@@ -185,9 +185,10 @@ final class GameViewModel {
         return prepareAdventure(with: nextBook, reduceMotion: reduceMotion, continuingRun: true)
     }
 
-    func recordLanding(at wordIndex: Int, word: String) {
-        wordLeapFeature.recordLanding(at: wordIndex)
-        lastReadWord = word
+    func recordLanding(at wordIndex: Int) {
+        guard wordLeapFeature.recordLanding(at: wordIndex),
+              let activeLevel, activeLevel.words.indices.contains(wordIndex) else { return }
+        lastReadWord = activeLevel.words[wordIndex]
     }
 
     func showDeath(collectedDoubloons: Int, activeSeconds: TimeInterval) {

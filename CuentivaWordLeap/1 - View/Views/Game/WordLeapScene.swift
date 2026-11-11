@@ -12,7 +12,7 @@ private enum WordLeapScenePalette {
 @MainActor
 final class WordLeapScene: SKScene {
     private let levelPlan: LevelPlan
-    private let reportLanding: @MainActor (_ wordIndex: Int, _ word: String) -> Void
+    private let reportLanding: @MainActor (_ wordIndex: Int) -> Void
     private let reportDeath: @MainActor (Int, TimeInterval) -> Void
     private let reportCoinCount: @MainActor (Int) -> Void
     private let reportRescue: @MainActor (Int, TimeInterval) -> Void
@@ -34,7 +34,7 @@ final class WordLeapScene: SKScene {
         reportCoinCount: @escaping @MainActor (Int) -> Void,
         reportRescue: @escaping @MainActor (Int, TimeInterval) -> Void,
         reportDeath: @escaping @MainActor (Int, TimeInterval) -> Void,
-        reportLanding: @escaping @MainActor (_ wordIndex: Int, _ word: String) -> Void
+        reportLanding: @escaping @MainActor (_ wordIndex: Int) -> Void
     ) {
         self.levelPlan = levelPlan
         scenery = ParallaxBackgroundNode(
@@ -240,7 +240,7 @@ final class WordLeapScene: SKScene {
     private func reportProgress(at index: Int) {
         let platform = simulation.platforms[index]
         playLandingPulse(at: platform.frame)
-        reportLanding(platform.index, platform.word)
+        reportLanding(platform.index)
         if index == simulation.platforms.count - 1 { beamUpToSafety() }
     }
 
