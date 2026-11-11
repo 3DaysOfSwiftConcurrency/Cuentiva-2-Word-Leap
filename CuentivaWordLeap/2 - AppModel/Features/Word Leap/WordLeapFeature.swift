@@ -36,7 +36,7 @@ final class WordLeapFeature {
         let revision = preparationRevision
         preparationRequest = request
         preparationFailure = nil
-        let task = Task { [levelPlanBuilder, libraryFeature, completionTask] in
+        let newPreparationTask = Task { [levelPlanBuilder, libraryFeature, completionTask] in
             defer {
                 if self.preparationRevision == revision {
                     self.preparationTask = nil
@@ -64,8 +64,8 @@ final class WordLeapFeature {
                 self.preparationFailure = .libraryUnavailable
             }
         }
-        preparationTask = task
-        return task
+        preparationTask = newPreparationTask
+        return newPreparationTask
     }
 
     @discardableResult
@@ -80,7 +80,7 @@ final class WordLeapFeature {
             let bookID = activeLevel.book.id
             completionRevision += 1
             let revision = completionRevision
-            let task = Task { [libraryFeature] in
+            let completionSaveTask = Task { [libraryFeature] in
                 defer {
                     if self.completionRevision == revision {
                         self.completionTask = nil
@@ -88,7 +88,7 @@ final class WordLeapFeature {
                 }
                 await libraryFeature.recordCompletion(of: bookID)
             }
-            completionTask = task
+            completionTask = completionSaveTask
         }
         return true
     }
@@ -114,7 +114,7 @@ final class WordLeapFeature {
         doubloonSaveRevision += 1
         let revision = doubloonSaveRevision
         let predecessor = doubloonSaveTask
-        let task = Task { [libraryFeature] in
+        let doubloonCreditTask = Task { [libraryFeature] in
             defer {
                 if self.doubloonSaveRevision == revision {
                     self.doubloonSaveTask = nil
@@ -124,8 +124,8 @@ final class WordLeapFeature {
             await libraryFeature.bankDoubloons(earnedDoubloons)
         }
         // Durable credits continue if the player leaves or begins another level.
-        doubloonSaveTask = task
-        return task
+        doubloonSaveTask = doubloonCreditTask
+        return doubloonCreditTask
     }
 
     private func validatedDoubloonCount(_ reportedCount: Int, for level: LevelPlan) -> Int {

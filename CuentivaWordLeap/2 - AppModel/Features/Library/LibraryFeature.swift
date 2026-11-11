@@ -74,7 +74,7 @@ final class LibraryFeature {
         let revision = loadingRevision
         loadingOperation = operation
         isLoading = true
-        let task = Task { [bookRepository, levelProgressStore] in
+        let operationTask = Task { [bookRepository, levelProgressStore] in
             defer {
                 if self.loadingRevision == revision {
                     self.isLoading = false
@@ -90,21 +90,21 @@ final class LibraryFeature {
                 await self.refreshBooks(from: bookRepository, levelProgressStore: levelProgressStore)
             }
         }
-        loadingTask = task
-        return task
+        loadingTask = operationTask
+        return operationTask
     }
 
     func refreshProgress() -> Task<Void, Never> {
         if let progressRefreshTask { return progressRefreshTask }
-        let task = Task { [levelProgressStore] in
+        let refreshTask = Task { [levelProgressStore] in
             async let savedCompletedBookIDs = levelProgressStore.completedBookIDs()
             async let savedDoubloonBalance = levelProgressStore.doubloonBalance()
             completedBookIDs.formUnion(await savedCompletedBookIDs)
             doubloonBalance = max(doubloonBalance, await savedDoubloonBalance)
             progressRefreshTask = nil
         }
-        progressRefreshTask = task
-        return task
+        progressRefreshTask = refreshTask
+        return refreshTask
     }
 
     func bankDoubloons(_ earnedDoubloons: Int) async {

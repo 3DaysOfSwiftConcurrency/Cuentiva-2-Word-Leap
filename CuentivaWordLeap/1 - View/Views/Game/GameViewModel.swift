@@ -143,7 +143,7 @@ final class GameViewModel {
         isDeathPresented = false
         isBookRevealed = false
         collectedDoubloons = 0
-        let task = Task {
+        let newPreparationTask = Task {
             defer {
                 if preparationRevision == revision {
                     preparationTask = nil
@@ -175,8 +175,8 @@ final class GameViewModel {
                     recordLanding(at: wordIndex)
                 })
         }
-        preparationTask = task
-        return task
+        preparationTask = newPreparationTask
+        return newPreparationTask
     }
 
     @discardableResult

@@ -42,9 +42,9 @@ struct ParallaxBackgroundNodeTests {
             for layer in ParallaxSceneryRecipe(environment: environment).layers {
                 background.update(cameraClimb: 0, activeSeconds: 0)
                 let sprite = try #require(background.childNode(withName: layer.assetName))
-                let start = sprite.position.y
+                let startingY = sprite.position.y
                 background.update(cameraClimb: 100, activeSeconds: 1)
-                #expect(abs(sprite.position.y - (start - 100 * layer.speed)) < 0.001)
+                #expect(abs(sprite.position.y - (startingY - 100 * layer.speed)) < 0.001)
             }
         }
     }

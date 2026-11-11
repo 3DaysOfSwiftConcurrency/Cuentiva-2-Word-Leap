@@ -64,9 +64,9 @@ struct CastleAccessTests {
         defer { try? fixture.cleanUp() }
         await fixture.libraryFeature.load().value
         let first = try #require(fixture.libraryFeature.books.first)
-        let task = fixture.wordLeapFeature.startAdventure(with: first)
+        let cancelledPreparation = fixture.wordLeapFeature.startAdventure(with: first)
         fixture.wordLeapFeature.endLevel()
-        await task.value
+        await cancelledPreparation.value
         #expect(fixture.wordLeapFeature.activeLevel == nil)
         #expect(fixture.libraryFeature.completedBookIDs.isEmpty)
         await fixture.wordLeapFeature.startAdventure(with: first).value
